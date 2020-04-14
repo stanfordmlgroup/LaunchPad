@@ -1,0 +1,11 @@
+meta:
+    script: /deep/group/haosheng/LaunchPad/main.py
+    sandbox: /deep/group/haosheng/temp/
+    mode: grid 
+    sample: 20
+    repeat: 1
+    
+hp: 
+    lr: [0.1, 0.5]
+    optimizer: [SGD, Adam]
+     
