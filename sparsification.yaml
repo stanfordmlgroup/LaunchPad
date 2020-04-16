@@ -1,0 +1,16 @@
+meta:
+    script: /sailhome/haosheng/workspace/sparsification/exp.py
+    sandbox: /deep/group/haosheng/sparsification/exp/
+    mode: grid 
+    sample: 20
+    repeat: 5
+    gpus: 1
+    func: 
+    logpath: /deep/group/haosheng/sparsification/log
+    key: ['r']
+    
+hp: 
+    r: [0.1, 0.2, 0.5, 1, 2, 4, 10, 20]
+    save_folder: /deep/group/haosheng/sparsification/exp/
+    
+     

@@ -4,6 +4,9 @@ meta:
     mode: grid 
     sample: 20
     repeat: 1
+    gpus: 1
+    func: 
+    logpath: /deep/group/haosheng/temp/log
     
 hp: 
     lr: [0.1, 0.5]
