@@ -1,5 +1,6 @@
 #!/bin/bash
 #SBATCH --partition=deep --qos=normal
+#SBATCH --exclude=@EXCLUDE
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=16G

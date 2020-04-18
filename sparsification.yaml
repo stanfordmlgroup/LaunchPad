@@ -1,16 +1,20 @@
 meta:
-    script: /sailhome/haosheng/workspace/sparsification/exp.py
+    script: python /sailhome/haosheng/workspace/sparsification/exp.py
     sandbox: /deep/group/haosheng/sparsification/exp/
     mode: grid 
     sample: 20
-    repeat: 5
+    repeat: 1
+    exclude: deep[1-9]
     gpus: 1
-    func: 
+    func: " "
     logpath: /deep/group/haosheng/sparsification/log
-    key: ['r']
+    key: ['r', 'mode']
     
 hp: 
-    r: [0.1, 0.2, 0.5, 1, 2, 4, 10, 20]
-    save_folder: /deep/group/haosheng/sparsification/exp/
+    #r: [0.1, 0.2, 0.5, 1, 2, 4, 10, 20]
+    r: [0.1, 0.5, 2, 10]
+    save_folder: ['/deep/group/haosheng/sparsification/exp/']
+    max_iteration: [5000]
+    mode: ['effective', 'random', 'weight']
     
      
