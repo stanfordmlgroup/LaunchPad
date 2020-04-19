@@ -1,4 +1,5 @@
 import yaml
+import os
 
 
 class Args(dict):
@@ -22,6 +23,8 @@ class Args(dict):
 
 class Config:
     def __init__(self, path):
+        if not os.path.exists(path):
+            raise FileNotFoundError(f"Configuration file [{path}] not found!")
         with open(path, "r") as f:
             _config = yaml.load(f, Loader=yaml.SafeLoader)
         self.meta = Args(_config['meta'])
