@@ -5,7 +5,7 @@ import uuid
 import fire
 
 
-def main(config="config.yaml",
+def run(config="config.yaml",
          run="compile"):
     
     _config = Config(config)
@@ -48,5 +48,5 @@ def main(config="config.yaml",
                     print(exec_line)
                     #os.remove(sbatch_filepath)
 
-if __name__ == "__main__":
-    fire.Fire(main)
+def main():
+    fire.Fire(run)
