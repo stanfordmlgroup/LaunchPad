@@ -1,6 +1,6 @@
 # LaunchPad
----
-LaunchPad is a quick sbatch launcher for hyper-parameter search.
+LaunchPad is a quick sbatch launcher for hyper-parameter search. 
+It will compile an YAML config file into a series of sbatch scripts and launch over the cluster.
 
 ## Features
 - Consolidated configuration file. 
@@ -37,7 +37,7 @@ python /deep/group/haosheng/LaunchPad/main.py --lr 0.5 --optimizer SGD --exp_nam
 python /deep/group/haosheng/LaunchPad/main.py --lr 0.5 --optimizer Adam --exp_name 456744e1553e4726a4dfb9e02b530d7c
 ```
 
-If you want auto-generate meaningful `exp_name` you can specify the `key` arguments under meta:
+If you want auto-generate meaningful `exp_name` you can specify the `key` arguments under `meta` section:
 ```YAML
 ...
     key: ['lr', 'optimizer']
@@ -57,7 +57,7 @@ Once you think the configuration is ready for launching over the cluster, you ca
 lp config.py --run sbatch
 ```
 
-
+Auto-generated sbatch scripts and logs can be found in `sandbox` and `logpath` folder. 
 
 
 
