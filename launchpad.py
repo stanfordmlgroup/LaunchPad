@@ -1,8 +1,11 @@
 import yaml
 from sklearn.model_selection import ParameterGrid, ParameterSampler
-from config import Config
+from subprocess import check_call
 import uuid
 import fire
+import os
+
+from config import Config
 
 
 def run(config="config.yaml",
