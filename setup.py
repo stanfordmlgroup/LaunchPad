@@ -48,6 +48,8 @@ setup(
     install_requires=INSTALL_REQUIRES,
     # test_suite='test.test_launchpad',
     py_modules=['launchpad'],
+    package_data={'': ['*.sh']},
     zip_safe=False,
+    include_package_data=True,
     entry_points={'console_scripts': ['lp = launchpad:main']},
 )

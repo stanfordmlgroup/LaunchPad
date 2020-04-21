@@ -4,12 +4,7 @@ from subprocess import check_call
 import uuid
 import fire
 import os
-
-try:
-    import importlib.resources as pkg_resources
-except ImportError:
-    # Try backported to PY<37 `importlib_resources`.
-    import importlib_resources as pkg_resources
+import pkgutil
 
 from config import Config
 
@@ -42,7 +37,7 @@ def run(config="config.yaml",
                 print(exec_line)
                 check_call(exec_line, shell=True)
             elif run == "sbatch":
-                template = pkg_resources.read_text('sbatch_template.sh')
+                template = pkgutil.get_data(__name__, "scripts/sbatch_template.sh").decode()
 
                 template = template.replace("@GPUS", f"{meta.gpus}")
                 template = template.replace("@EXCLUDE", f"{meta.exclude}")
