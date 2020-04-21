@@ -8,7 +8,7 @@ It will compile an YAML config file into a series of sbatch scripts and launch o
 
 ## Installation 
 ```
- pip install git+https://github.com/haossr/LaunchPad.git
+ pip install git+https://github.com/stanfordmlgroup/LaunchPad.git
 ```
 
 ## Config file and example usage
