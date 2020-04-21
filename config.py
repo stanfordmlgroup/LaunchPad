@@ -21,6 +21,7 @@ class Args(dict):
         else:
             AttributeError("No such attribute: " + name)
 
+
 class Config:
     def __init__(self, path):
         if not os.path.exists(path):
