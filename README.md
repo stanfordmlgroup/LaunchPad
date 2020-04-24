@@ -59,5 +59,16 @@ lp config.py --run sbatch
 
 Auto-generated sbatch scripts and logs can be found in `sandbox` and `logpath` folder. 
 
+## Parameters
+### Meta 
+`meta` section contains all the parameters that control the compiling of the sbatch scripts. 
+
+### Sbatch
+`sbatch` section contains all the parameters that will be passed to the sbatch. 
+Please refer to [online sbatch documentation via SchedMD](https://slurm.schedmd.com/sbatch.html) for the complete list of parameters. 
+
+### Hyper-parameters
+`hp` section is purely defined by user. They are hyper-parameters we want to scan for the training experiments. 
+ 
 
 
