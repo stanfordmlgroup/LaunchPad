@@ -9,7 +9,6 @@ meta:
     key: ['r', 'mode']
     
 hp: 
-    #r: [0.1, 0.2, 0.5, 1, 2, 4, 10, 20]
     r: [0.1, 0.5, 2, 10]
     save_folder: ['/deep/group/exp/']
     max_iteration: [5000]

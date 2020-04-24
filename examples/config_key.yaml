@@ -11,4 +11,7 @@ meta:
 hp: 
     lr: [0.1, 0.5]
     optimizer: [SGD, Adam]
+
+sbatch:
+    exclude: deep[1-9]
      

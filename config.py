@@ -30,3 +30,4 @@ class Config:
             _config = yaml.load(f, Loader=yaml.SafeLoader)
         self.meta = Args(_config['meta'])
         self.hp = Args(_config['hp'])
+        self.sbatch = Args(_config['sbatch'])

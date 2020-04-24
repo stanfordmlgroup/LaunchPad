@@ -1,19 +1,12 @@
 #!/bin/bash
 #SBATCH --partition=deep --qos=normal
-#SBATCH --exclude=@EXCLUDE
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=16G
-
-# only use the following on partition with GPUs
 #SBATCH --gres=gpu:@GPUS
-
 #SBATCH --job-name="@NAME"
 #SBATCH --output="@LOG/@NAME-%j.log"
-
-# only use the following if you want email notification
-####SBATCH --mail-user=youremailaddress
-####SBATCH --mail-type=ALL
+@CONFIG
 
 # list out some useful information (optional)
 echo "SLURM_JOBID="$SLURM_JOBID
