@@ -4,6 +4,7 @@ meta:
     mode: grid 
     sample: 20
     repeat: 1
+    prefix: demo
     gpus: 1
     logpath: /deep/group/haosheng/temp/log
     key: ['lr', 'optimizer']

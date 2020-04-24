@@ -1,13 +1,34 @@
 import yaml
 from sklearn.model_selection import ParameterGrid, ParameterSampler
-from subprocess import check_call
+from subprocess import check_call, check_output
 import uuid
 import fire
 import os
 import pkgutil
+import logging
 
 from config import Config
 
+
+logger = logging.getLogger("LaunchPad")
+formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+console = logging.StreamHandler()
+console.setLevel(logging.INFO)
+console.setFormatter(formatter)
+logger.addHandler(console)
+
+def check_existing(exp_name, meta):
+    sbatch_filepath = os.path.join(meta.sandbox, f"{exp_name}.sh")
+    return os.path.exists(sbatch_filepath)
+
+def check_running(exp_name, meta):
+    username = os.environ['USER']
+    running_jobs = check_output(["squeue",  "-u", username,
+                    "-o", "%.1000j"]).split()[1:]
+    running_job_names = [job.decode('utf-8')
+                       for job in running_jobs
+                    if 'run_' in job.decode('utf-8')]
+    return exp_name in running_job_names
 
 def compile_template(exec_line, sbatch_config, exp_name, meta):
     template = pkgutil.get_data(__name__, "scripts/sbatch_template.sh").decode()
@@ -19,7 +40,7 @@ def compile_template(exec_line, sbatch_config, exp_name, meta):
     sbatch_filepath = os.path.join(meta.sandbox, f"{exp_name}.sh")
     with open(sbatch_filepath, 'w') as f:
         f.write(template)
-    return template
+    return sbatch_filepath 
 
 def run(config="config.yaml",
         run="compile"):
@@ -36,25 +57,40 @@ def run(config="config.yaml",
         for idx, c in enumerate(config_list):
             if "key" in meta:
                 key_config = meta.key
-                c['exp_name'] = exp_name = "_".join(
-                    [str(c[k]) for k in key_config]) + f"_round_{i}"
+                exp_name = "_".join(
+                        [str(c[k]) for k in key_config] + [f"{i}"])
             else:
-                c['exp_name'] = exp_name = uuid.uuid4().hex
+                exp_name = uuid.uuid4().hex
 
+            if "prefix" in meta:
+                exp_name = meta.prefix + "_" + exp_name
+            
+            c['exp_name'] = exp_name
+            
             exec_line = f"{meta.script} " + \
                 " ".join([f"--{k} {v}" for k, v in c.items()])
             sbatch_config = "\n".join([f"#SBATCH --{k}={v}" for k, v in sbatch.items()])
+           
+            print("-"*120)
+            print(f"[{exp_name}]: {exec_line}")
+            if check_existing(exp_name, meta):
+                if 'override' in meta and meta['override']:
+                    logger.warning(f"Override existing experiment [{exp_name}].") 
+                else:
+                    logger.warning(f"Skip existing experiment [{exp_name}].") 
+                    continue
+            
+            if check_running(exp_name, meta):
+                logger.warning(f"Skip experiment [{exp_name}], which is already running.") 
+                continue
             
             if run == "compile":
-                tempalte = compile_template(exec_line, sbatch_config, exp_name, meta)
-                print(exec_line)
+                sbatch_filepath = compile_template(exec_line, sbatch_config, exp_name, meta)
             elif run == "shell":
-                print(exec_line)
                 check_call(exec_line, shell=True)
             elif run == "sbatch":
-                tempalte = compile_template(exec_line, sbatch_config, exp_name, meta)
+                sbatch_filepath = compile_template(exec_line, sbatch_config, exp_name, meta)
                 check_call(f"sbatch {sbatch_filepath}", shell=True)
-                print(exec_line)
                 #os.remove(sbatch_filepath)
 
 
