@@ -60,14 +60,22 @@ lp config.py --run sbatch
 Auto-generated sbatch scripts and logs can be found in `sandbox` and `logpath` folder. 
 
 ## Parameters
-### Meta 
+### Meta parameters
 `meta` section contains all the parameters that control the compiling of the sbatch scripts. 
+- `script`: The bash command line to run.
+- `prefix`: A prefix tag that will be added to all `exp_name`.
+- `sandbox`: A temp folder path to store all generated sbatch scripts.
+- `mode`: One of `["grid", "random"]`. Either to perform grid search or random search for the hyper-parameters combinations. 
+- `repeat`: Round of repeat experiments. Only effective when `mode` is `grid`.
+- `gpus`: Number of gpus to use. 
+- `samples`: Number of total samples. Only effective when `mode` is `random`. `logpath`: Default path to save sbatch logs.
+- `keys`: Key experiment parameters to identify each experiment. The `exp_name` will be a underline concatenation of all the parameters specified here. If not given a random uuid is used as `exp_name`. 
 
-### Sbatch
-`sbatch` section contains all the parameters that will be passed to the sbatch. 
+### Sbatch parameters
+`sbatch` section contains all extra parameters that will be passed to the sbatch. 
 Please refer to [online sbatch documentation via SchedMD](https://slurm.schedmd.com/sbatch.html) for the complete list of parameters. 
 
-### Hyper-parameters
+### Experiment parameters
 `hp` section is purely defined by user. They are hyper-parameters we want to scan for the training experiments. 
  
 

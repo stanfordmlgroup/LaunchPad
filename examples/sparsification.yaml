@@ -4,7 +4,6 @@ meta:
     mode: grid 
     sample: 20
     repeat: 1
-    exclude: deep[1-9]
     gpus: 1
     logpath: /deep/group/$USER/log
     key: ['r', 'mode']
@@ -15,5 +14,8 @@ hp:
     save_folder: ['/deep/group/exp/']
     max_iteration: [5000]
     mode: ['effective', 'random', 'weight']
+
+sbatch:
+    exclude: deep[1-9]
     
      
