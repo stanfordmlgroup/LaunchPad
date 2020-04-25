@@ -74,7 +74,7 @@ def run(config="config.yaml",
            
             col, _ = shutil.get_terminal_size() 
             print("-"*col)
-            print(f"[{exp_name}]:\n{exec_line}\n")
+            print(f"Experiment No.{idx+1} -- [{exp_name}]:\n{exec_line}\n")
             if check_existing(exp_name, meta):
                 if 'override' in meta and meta['override']:
                     logger.warning(f"Override existing experiment [{exp_name}].") 
