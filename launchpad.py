@@ -6,6 +6,7 @@ import fire
 import os
 import pkgutil
 import logging
+import shutil
 
 from config import Config
 
@@ -44,7 +45,7 @@ def compile_template(exec_line, sbatch_config, exp_name, meta):
 
 def run(config="config.yaml",
         run="compile"):
-
+    col, _ = shutil.get_terminal_size() 
     _config = Config(config)
     meta, hp, sbatch = _config.meta, _config.hp, _config.sbatch
 
@@ -71,8 +72,9 @@ def run(config="config.yaml",
                 " ".join([f"--{k} {v}" for k, v in c.items()])
             sbatch_config = "\n".join([f"#SBATCH --{k}={v}" for k, v in sbatch.items()])
            
-            print("-"*120)
-            print(f"[{exp_name}]: {exec_line}")
+            col, _ = shutil.get_terminal_size() 
+            print("-"*col)
+            print(f"[{exp_name}]:\n{exec_line}\n")
             if check_existing(exp_name, meta):
                 if 'override' in meta and meta['override']:
                     logger.warning(f"Override existing experiment [{exp_name}].") 
@@ -92,6 +94,7 @@ def run(config="config.yaml",
                 sbatch_filepath = compile_template(exec_line, sbatch_config, exp_name, meta)
                 check_call(f"sbatch {sbatch_filepath}", shell=True)
                 #os.remove(sbatch_filepath)
+    print("-"*col)
 
 
 def main():
