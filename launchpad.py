@@ -4,12 +4,13 @@ from subprocess import check_call, check_output
 import uuid
 import fire
 import os
+import pandas as pd
 import pkgutil
 import logging
 import shutil
 
 from config import Config
-from smanager import Smanager 
+from smanager import Smanager
 
 logger = logging.getLogger("LaunchPad")
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
@@ -30,6 +31,19 @@ class Colors:
     UNDERLINE = '\033[4m'
 
 
+def colorful_state(state):
+    if state == "Running":
+        return f"{Colors.OKGREEN}Running{Colors.ENDC}"
+    elif state == "Pending":
+        return f"{Colors.OKBLUE}Pending{Colors.ENDC}"
+    elif state == "Finished":
+        return f"{Colors.WARNING}Finished{Colors.ENDC}"
+    elif state == "Compiled":
+        return f"{Colors.BOLD}Compiled{Colors.ENDC}"
+    else:
+        return f"{Colors.FAIL}Unknown{Colors.ENDC}"
+
+
 def check_state(exp_name, meta):
     username = os.environ['USER']
     smanager = Smanager(user=username)
@@ -38,7 +52,7 @@ def check_state(exp_name, meta):
         log_filepath = os.path.join(meta.logpath, f"{exp_name}.log")
         if os.path.exists(log_filepath):
             state = "Finished"
-        else: 
+        else:
             sbatch_filepath = os.path.join(meta.sandbox, f"{exp_name}.sh")
             if os.path.exists(sbatch_filepath):
                 state = "Compiled"
@@ -50,7 +64,7 @@ def check_state(exp_name, meta):
         state = "Pending"
     return state
 
-    
+
 def compile_template(exec_line, sbatch_config, exp_name, meta):
     template = pkgutil.get_data(__name__, "scripts/sbatch_template.sh").decode()
     template = template.replace("@GPUS", f"{meta.gpus}")
@@ -61,15 +75,17 @@ def compile_template(exec_line, sbatch_config, exp_name, meta):
     sbatch_filepath = os.path.join(meta.sandbox, f"{exp_name}.sh")
     with open(sbatch_filepath, 'w') as f:
         f.write(template)
-    return sbatch_filepath 
+    return sbatch_filepath
+
 
 def run(config="config.yaml",
         run="compile"):
-    #TODO Add the logic if config is a folder concat config.yaml
-    col, _ = shutil.get_terminal_size() 
+    if os.path.isdir(config):
+        config = os.path.join(config, "config.yaml")
+    col, _ = shutil.get_terminal_size()
     _config = Config(config)
     meta, hp, sbatch = _config.meta, _config.hp, _config.sbatch
-
+    jobs = []
     for i in range(meta.repeat):
         if meta.mode == "grid":
             config_list = list(ParameterGrid(hp))
@@ -80,47 +96,59 @@ def run(config="config.yaml",
             if "key" in meta:
                 key_config = meta.key
                 exp_name = "_".join(
-                        [str(c[k]) for k in key_config] + [f"{i}"])
+                    [str(c[k]) for k in key_config] + [f"{i}"])
             else:
                 exp_name = uuid.uuid4().hex
 
             if "prefix" in meta:
                 exp_name = meta.prefix + "_" + exp_name
-            
+
             c['exp_name'] = exp_name
-            
+
             exec_line = f"{meta.script} " + \
                 " ".join([f"--{k} {v}" for k, v in c.items()])
-            sbatch_config = "\n".join([f"#SBATCH --{k}={v}" for k, v in sbatch.items()])
-           
-            col, _ = shutil.get_terminal_size()
+            sbatch_config = "\n".join(
+                [f"#SBATCH --{k}={v}" for k, v in sbatch.items()])
+
             state = check_state(exp_name, meta)
-            print("-"*col)
-            print(f"Experiment No.{idx+1} -- [{exp_name}]:\n{exec_line}\n")
-            print(f"Current State: {state}")
+            jobs.append({"name": exp_name,
+                         "state": state,
+                         "exec_line": exec_line,
+                         "idx": idx})
+            print("-" * col)
+            print(f"Experiment No.{idx+1} -- [{exp_name}]:\n{exec_line}")
+            print(f"Current State: {colorful_state(state)}")
             # TODO: Add a status
             if state == "Finish":
                 if 'override' in meta and meta['override']:
-                    logger.warning(f"Override existing experiment [{exp_name}].") 
+                    logger.warning(
+                        f"Override existing experiment [{exp_name}].")
                 else:
-                    logger.warning(f"Skip existing experiment [{exp_name}].") 
+                    logger.warning(f"Skip existing experiment [{exp_name}].")
                     continue
             if state == "Running":
-                logger.warning(f"Skip experiment [{exp_name}], which is already running.") 
+                logger.warning(
+                    f"Skip experiment [{exp_name}], which is already running.")
                 continue
             if state == "Compiled":
-                logger.info(f"Recompiled experiment [{exp_name}].") 
- 
+                logger.info(f"Recompiled experiment [{exp_name}].")
+
             if run == "compile":
-                sbatch_filepath = compile_template(exec_line, sbatch_config, exp_name, meta)
+                sbatch_filepath = compile_template(
+                    exec_line, sbatch_config, exp_name, meta)
             elif run == "shell":
                 check_call(exec_line, shell=True)
             elif run == "sbatch":
-                sbatch_filepath = compile_template(exec_line, sbatch_config, exp_name, meta)
+                sbatch_filepath = compile_template(
+                    exec_line, sbatch_config, exp_name, meta)
                 check_call(f"sbatch {sbatch_filepath}", shell=True)
-                #os.remove(sbatch_filepath)
-    print("-"*col)
-    # TODO: Add a job summary (colorful)
+                # os.remove(sbatch_filepath)
+    jobs = pd.DataFrame(jobs)
+    print("-" * col)
+    state_count = [
+        f"{count} {colorful_state(state)}" for state,
+        count in jobs.groupby("state")['idx'].nunique().to_dict().items()]
+    print(f"{len(jobs)} jobs: {', '.join(state_count)}")
 
 
 def main():
