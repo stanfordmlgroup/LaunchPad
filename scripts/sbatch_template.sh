@@ -5,7 +5,7 @@
 #SBATCH --mem=16G
 #SBATCH --gres=gpu:@GPUS
 #SBATCH --job-name="@NAME"
-#SBATCH --output="@LOG/@NAME-%j.log"
+#SBATCH --output="@LOG/@NAME.log"
 @CONFIG
 
 # list out some useful information (optional)

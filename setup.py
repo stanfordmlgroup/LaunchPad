@@ -10,7 +10,10 @@ from setuptools import setup
 INSTALL_REQUIRES = (
     ['fire>=0.2',
      'scikit-learn>=0.20',
-     'importlib-resources==1.4.0']
+     'importlib-resources==1.4.0',
+     'numpy',
+     'pandas',
+     'glob']
 )
 
 
