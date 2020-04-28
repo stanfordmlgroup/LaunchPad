@@ -147,7 +147,7 @@ def run(config="config.yaml",
     print("-" * col)
     state_count = [
         f"{count} {colorful_state(state)}" for state,
-        count in jobs.groupby("state")['idx'].nunique().to_dict().items()]
+        count in jobs.groupby("state")['name'].nunique().to_dict().items()]
     print(f"{len(jobs)} jobs: {', '.join(state_count)}")
 
 
