@@ -89,7 +89,7 @@ class Smanager():
         print(self.df)
 
     def get_state(self, name):
-        if name not in self.df.name.unique():
+        if name not in self.df.name.unique().tolist():
             return "N"
         state = self.df.query(f"name=='{name}'").state.iloc[0]
         return state
