@@ -13,8 +13,8 @@ INSTALL_REQUIRES = (
      'importlib-resources==1.4.0',
      'numpy',
      'pandas',
-     'tabulate'
-     'glob']
+     'tabulate',
+     'glob3']
 )
 
 
