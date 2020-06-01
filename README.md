@@ -28,7 +28,7 @@ hp:
     optimizer: [SGD, Adam]
 ```
 
-You can print out the command lists by `lp config.py` or simply `lp`:
+You can print out the command lists by `lp config.yaml` or simply `lp`:
 ```
 $ lp
 python /deep/group/haosheng/LaunchPad/main.py --lr 0.1 --optimizer SGD --exp_name ff2623c422c8422a875af14545d3ce6f
