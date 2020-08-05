@@ -54,7 +54,7 @@ python /deep/group/haosheng/LaunchPad/main.py --lr 0.5 --optimizer Adam --exp_na
 
 Once you think the configuration is ready for launching over the cluster, you can run 
 ```
-lp config.py --run sbatch
+lp config.yaml --run sbatch
 ```
 
 Auto-generated sbatch scripts and logs can be found in `sandbox` and `logpath` folder. 
