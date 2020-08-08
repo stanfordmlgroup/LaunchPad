@@ -1,1 +1,11 @@
-include scripts/sbatch_template.sh
+# Include sbatch scirpt
+include launchpad/scripts/sbatch_template.sh
+
+# Include the README
+include README.md
+
+# Pruning
+prune .git
+prune .github
+prune notebook* 
+

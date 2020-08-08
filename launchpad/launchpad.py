@@ -9,8 +9,8 @@ import pkgutil
 import logging
 import shutil
 
-from config import Config
-from smanager import Smanager
+from .config import Config
+from .smanager import Smanager
 
 logger = logging.getLogger("LaunchPad")
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
