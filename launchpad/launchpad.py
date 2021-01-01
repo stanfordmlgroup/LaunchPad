@@ -73,12 +73,11 @@ def run(config="config.yaml",
         for idx, c in enumerate(config_list):
             _config.hp = c
             job = Job(_config)
-            jobs.append(job)
+            job.compile()
             state = job.get_state()
-            print("-" * col)
-            print(f"Experiment No.{idx+1} -- [{job._exp_name}]:\n{job._exec_line}")
-            print(f"Current State: {state}")
-
+            jobs.append(job)
+                        
+            # Check state
             if state == "Finish":
                 if 'override' in meta and meta['override']:
                     logger.warning(
@@ -90,15 +89,21 @@ def run(config="config.yaml",
                 logger.warning(
                     f"Skip experiment [{exp_name}], which is already running.")
                 continue
-            if state == "Compiled":
+            elif state == "Compiled":
                 logger.info(f"Recompiled experiment [{exp_name}].")
-            if run == "compile":
-                job.compile()
-            elif run == "shell":
-                check_call(exec_line, shell=True)
+            
+            # Execution 
+            if run == "shell":
+                job.shell()
             elif run == "sbatch":
                 job.sbatch()
+
+            print("-" * col)
+            print(f"Experiment No.{idx+1} -- [{job._exp_name}]:\n{job._exec_line}")
+            print(f"Current State: {state}") 
+            if run == "sbatch":
                 print(f"Slurm job ID: {job._id}")
+
 
     #jobs = pd.DataFrame(jobs)
     #print("-" * col)
