@@ -1,7 +1,10 @@
 import os
 import uuid
 import re
-from subprocess import check_call, check_output
+from cachetools.func import ttl_cache
+from subprocess import (check_call, 
+                        check_output,
+                        CalledProcessError)
 
 from .smanager import Smanager
 from util import colorful_state
@@ -12,13 +15,10 @@ class Job:
         self._hp = config.hp
         self._sbatch = config.sbatch
     
-
         self._id = None
-        self._exec_line = f"{self._meta.script} " + \
-                " ".join([f"--{k} {v}" for k, v in self._hp.items()])
-        self._sbatch_config = "\n".join(
-                [f"#SBATCH --{k}={v}" for k, v in self._sbatch.items()])
-        self._get_exp_name()
+        self._exp_name = self._get_exp_name()
+        self._exec_line = self._get_exec_line()
+        self._sbatch_config = self._get_sbatch_config()
         self._sbatch_filepath = os.path.join(self._meta.sandbox, f"{self._exp_name}.sh")
         self._log_filepath = os.path.join(self._meta.logpath, f"{self._exp_name}.log")
  
@@ -34,7 +34,8 @@ class Job:
         template = template.replace("@COMMAND", f"{self._exec_line}")
         with open(self._sbatch_filepath, 'w') as f:
             f.write(template)
-
+    
+    @ttl_cache(ttl=30)
     def get_state(self):
         state = None
         if self._id is None:
@@ -47,7 +48,7 @@ class Job:
                     state = "Unknown"
         else:
             cmd = ['squeue', '-j', self._id, '-o', self._format]
-            smines = subprocess.check_output(cmd)
+            smines = check_output(cmd)
             smines = smines.decode('utf8').split('\n')
             states = [None for _ in range(len(smines) - 2)]
             for i, smine in enumerate(smines[1:-1]):
@@ -65,6 +66,12 @@ class Job:
     def get_metrics(self):
         pass
 
+    def shell(self): 
+        try:
+            check_call(self._exec_line, shell=True)
+        except CalledProcessError as e:
+            print(e.output)
+
     def sbatch(self): 
         self.compile()
         output = check_output(f"sbatch {self._sbatch_filepath}", shell=True)
@@ -74,14 +81,24 @@ class Job:
     def cancel(self):
         pass
     
+    def _get_exec_line(self):
+        executor, script_path = self._meta.script.split()
+        script_path = os.path.abspath(script_path)
+        exec_line = " ".join([executor, script_path] \
+                + [f"--{k} {v}" for k, v in self._hp.items()])
+        return exec_line
+
     def _get_exp_name(self): 
         if "key" in self._meta:
-            exp_name = "_".join([str(c[k]) for k in self._meta.key] \
-                            + [f"{i}"])
+            exp_name = "_".join([str(self._hp[k]) for k in self._meta.key])
         else:
             exp_name = uuid.uuid4().hex
         if "prefix" in self._meta:
             exp_name = self._meta.prefix + "_" + exp_name
 
-        self._exp_name = exp_name
+        return exp_name
+
+    def _get_sbatch_config(self):
+        return "\n".join(
+                [f"#SBATCH --{k}={v}" for k, v in self._sbatch.items()])
 
