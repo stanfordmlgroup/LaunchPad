@@ -14,7 +14,8 @@ INSTALL_REQUIRES = (
      'numpy',
      'pandas',
      'tabulate',
-     'glob3']
+     'pyyaml'
+     ]
 )
 
 

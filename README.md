@@ -12,7 +12,7 @@ It will compile an YAML config file into a series of sbatch scripts and launch o
 ```
 
 ## Config file and example usage
-Here is one config file (config.yaml):
+Here is one config file (`example/config.yaml`):
 ```YAML
 meta:
     script: python /deep/group/haosheng/LaunchPad/main.py
