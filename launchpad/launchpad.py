@@ -41,21 +41,6 @@ def check_state(exp_name, meta):
     return state
 
 
-def compile_template(exec_line, sbatch_config, exp_name, meta):
-    #template = pkgutil.get_data(__name__, "scripts/sbatch_template.sh").decode()
-    with open("scripts/sbatch_template.sh", "r") as f:
-        template = f.read()
-    template = template.replace("@GPUS", f"{meta.gpus}")
-    template = template.replace("@LOG", f"{meta.logpath}")
-    template = template.replace("@NAME", f"{exp_name}")
-    template = template.replace("@CONFIG", f"{sbatch_config}")
-    template = template.replace("@COMMAND", f"{exec_line}")
-    sbatch_filepath = os.path.join(meta.sandbox, f"{exp_name}.sh")
-    with open(sbatch_filepath, 'w') as f:
-        f.write(template)
-    return sbatch_filepath
-
-
 def run(config="config.yaml",
         run="compile"):
     if os.path.isdir(config):
