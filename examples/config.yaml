@@ -1,5 +1,5 @@
 meta:
-    script: python /deep/group/haosheng/LaunchPad/main.py
+    script: python /deep/group/haosheng/LaunchPad/example/main.py
     sandbox: /deep/group/haosheng/temp/
     mode: grid 
     sample: 20

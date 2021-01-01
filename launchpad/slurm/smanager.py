@@ -1,7 +1,6 @@
-#!/usr/bin/env python3
-
 import time
 import glob
+import os
 import subprocess
 
 import numpy as np
@@ -9,47 +8,21 @@ import pandas as pd
 
 
 class Smanager():
-    def __init__(self, user='', format='%.18i %.9P %.100j %.8u %.2t %.10M %.6D %R'):
-        self._user = user
+    def __init__(self, user=None, format='%.18i %.9P %.100j %.8u %.2t %.10M %.6D %R'):
+        self._user = user 
+        if self._user is None: 
+            self._user = os.environ['USER']
         self._format = format
-
-        smines = subprocess.check_output(['squeue', '-u', user, '-o', format])
-        smines = smines.decode('utf8').split('\n')
-
-        ids = [None for _ in range(len(smines) - 2)]
-        partitions = [None for _ in range(len(smines) - 2)]
-        names = [None for _ in range(len(smines) - 2)]
-        users = [None for _ in range(len(smines) - 2)]
-        states = [None for _ in range(len(smines) - 2)]
-        times = [None for _ in range(len(smines) - 2)]
-        nodes = [None for _ in range(len(smines) - 2)]
-        nodelists = [None for _ in range(len(smines) - 2)]
-
-        for i, smine in enumerate(smines[1:-1]):
-            smine = smine.split(' ')
-            s = [s for s in smine if s is not '']
-            ids[i] = s[0]
-            partitions[i] = s[1]
-            names[i] = s[2]
-            users[i] = s[3]
-            states[i] = s[4]
-            times[i] = s[5]
-            nodes[i] = s[6]
-            nodelists[i] = s[7]
-        
-        self.df = pd.DataFrame({
-            'id': ids,
-            'partition': partitions,
-            'name': names,
-            'user': users,
-            'state': states,
-            'time': times,
-            'node': nodes,
-            'nodelist': nodelists,
-            })
+        self.update()
 
     def update(self):
-        smines = subprocess.check_output(['squeue', '-u', self._user, '-o', self._format])
+        if self._user == "":
+            cmd = ['squeue', '-o', self._format]
+
+        else:
+            cmd = ['squeue', '-u', self._user, '-o', self._format]
+
+        smines = subprocess.check_output(cmd)
         smines = smines.decode('utf8').split('\n')
 
         ids = [None for _ in range(len(smines) - 2)]
@@ -83,10 +56,6 @@ class Smanager():
             'node': nodes,
             'nodelist': nodelists,
             })
-
-    def show(self):
-        self.update()
-        print(self.df)
 
     def get_state(self, name):
         if name not in self.df.name.unique().tolist():

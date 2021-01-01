@@ -9,8 +9,8 @@ import pkgutil
 import logging
 import shutil
 
-from .config import Config
-from .smanager import Smanager
+from slurm import Smanager, Job
+from util import colorful_state, Config
 
 logger = logging.getLogger("LaunchPad")
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
@@ -18,30 +18,6 @@ console = logging.StreamHandler()
 console.setLevel(logging.INFO)
 console.setFormatter(formatter)
 logger.addHandler(console)
-
-
-class Colors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
-
-
-def colorful_state(state):
-    if state == "Running":
-        return f"{Colors.OKGREEN}Running{Colors.ENDC}"
-    elif state == "Pending":
-        return f"{Colors.OKBLUE}Pending{Colors.ENDC}"
-    elif state == "Finished":
-        return f"{Colors.WARNING}Finished{Colors.ENDC}"
-    elif state == "Compiled":
-        return f"{Colors.BOLD}Compiled{Colors.ENDC}"
-    else:
-        return f"{Colors.FAIL}Unknown{Colors.ENDC}"
 
 
 def check_state(exp_name, meta):
@@ -66,7 +42,9 @@ def check_state(exp_name, meta):
 
 
 def compile_template(exec_line, sbatch_config, exp_name, meta):
-    template = pkgutil.get_data(__name__, "scripts/sbatch_template.sh").decode()
+    #template = pkgutil.get_data(__name__, "scripts/sbatch_template.sh").decode()
+    with open("scripts/sbatch_template.sh", "r") as f:
+        template = f.read()
     template = template.replace("@GPUS", f"{meta.gpus}")
     template = template.replace("@LOG", f"{meta.logpath}")
     template = template.replace("@NAME", f"{exp_name}")
@@ -93,32 +71,14 @@ def run(config="config.yaml",
             config_list = list(ParameterSampler(hp, meta.sample))
 
         for idx, c in enumerate(config_list):
-            if "key" in meta:
-                key_config = meta.key
-                exp_name = "_".join(
-                    [str(c[k]) for k in key_config] + [f"{i}"])
-            else:
-                exp_name = uuid.uuid4().hex
-
-            if "prefix" in meta:
-                exp_name = meta.prefix + "_" + exp_name
-
-            c['exp_name'] = exp_name
-
-            exec_line = f"{meta.script} " + \
-                " ".join([f"--{k} {v}" for k, v in c.items()])
-            sbatch_config = "\n".join(
-                [f"#SBATCH --{k}={v}" for k, v in sbatch.items()])
-
-            state = check_state(exp_name, meta)
-            jobs.append({"name": exp_name,
-                         "state": state,
-                         "exec_line": exec_line,
-                         "idx": idx})
+            _config.hp = c
+            job = Job(_config)
+            jobs.append(job)
+            state = job.get_state()
             print("-" * col)
-            print(f"Experiment No.{idx+1} -- [{exp_name}]:\n{exec_line}")
-            print(f"Current State: {colorful_state(state)}")
-            # TODO: Add a status
+            print(f"Experiment No.{idx+1} -- [{job._exp_name}]:\n{job._exec_line}")
+            print(f"Current State: {state}")
+
             if state == "Finish":
                 if 'override' in meta and meta['override']:
                     logger.warning(
@@ -132,24 +92,24 @@ def run(config="config.yaml",
                 continue
             if state == "Compiled":
                 logger.info(f"Recompiled experiment [{exp_name}].")
-
             if run == "compile":
-                sbatch_filepath = compile_template(
-                    exec_line, sbatch_config, exp_name, meta)
+                job.compile()
             elif run == "shell":
                 check_call(exec_line, shell=True)
             elif run == "sbatch":
-                sbatch_filepath = compile_template(
-                    exec_line, sbatch_config, exp_name, meta)
-                check_call(f"sbatch {sbatch_filepath}", shell=True)
-                # os.remove(sbatch_filepath)
-    jobs = pd.DataFrame(jobs)
-    print("-" * col)
-    state_count = [
-        f"{count} {colorful_state(state)}" for state,
-        count in jobs.groupby("state")['name'].nunique().to_dict().items()]
-    print(f"{len(jobs)} jobs: {', '.join(state_count)}")
+                job.sbatch()
+                print(f"Slurm job ID: {job._id}")
+
+    #jobs = pd.DataFrame(jobs)
+    #print("-" * col)
+    #state_count = [
+    #    f"{count} {colorful_state(state)}" for state,
+    #    count in jobs.groupby("state")['name'].nunique().to_dict().items()]
+    #print(f"{len(jobs)} jobs: {', '.join(state_count)}")
 
 
 def main():
+    fire.Fire(run)
+
+if __name__ == "__main__":
     fire.Fire(run)
