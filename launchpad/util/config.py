@@ -29,5 +29,6 @@ class Config:
         with open(path, "r") as f:
             _config = yaml.load(f, Loader=yaml.SafeLoader)
         self.meta = Args(_config['meta'])
+        self.meta['config_path'] = path
         self.hp = Args(_config['hp'])
         self.sbatch = Args(_config['sbatch'])

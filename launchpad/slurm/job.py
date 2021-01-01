@@ -83,7 +83,9 @@ class Job:
     
     def _get_exec_line(self):
         executor, script_path = self._meta.script.split()
-        script_path = os.path.abspath(script_path)
+        config_path = self._meta.config_path
+        script_path = os.path.abspath(os.path.join(os.path.dirname(config_path),
+                                      script_path))
         exec_line = " ".join([executor, script_path] \
                 + [f"--{k} {v}" for k, v in self._hp.items()])
         return exec_line

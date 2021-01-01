@@ -1,5 +1,5 @@
 meta:
-    script: python ../examples/main.py
+    script: python main_key.py
     sandbox: /deep/group/haosheng/temp/
     mode: grid 
     sample: 20
