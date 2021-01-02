@@ -72,4 +72,3 @@ class Config:
             return ParameterGrid(self._hp)
         elif self.meta.mode == "random":
             return ParameterSampler(self._hp, self.meta.sample)
-
