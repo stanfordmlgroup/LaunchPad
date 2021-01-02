@@ -5,12 +5,11 @@ import uuid
 import fire
 import os
 import pandas as pd
-import pkgutil
 import logging
 import shutil
 
-from slurm import Smanager, Job
-from util import colorful_state, Config
+from .slurm import Smanager, Job
+from .util import colorful_state, Config, Args
 
 logger = logging.getLogger("LaunchPad")
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
@@ -33,9 +32,10 @@ def run(config="config.yaml",
             config_list = list(ParameterGrid(hp))
         elif meta.mode == "random":
             config_list = list(ParameterSampler(hp, meta.sample))
-
         for idx, c in enumerate(config_list):
-            _config.hp = c
+            c['round'] = i 
+            _config.hp = Args(c)
+
             job = Job(_config)
             job.compile()
             state = job.get_state()
@@ -68,14 +68,6 @@ def run(config="config.yaml",
                 print(f"Slurm job ID: {job._id}")
                 print("Latest metrics: ")
                 print(f"{job.get_metrics()}")
-
-    #jobs = pd.DataFrame(jobs)
-    #print("-" * col)
-    #state_count = [
-    #    f"{count} {colorful_state(state)}" for state,
-    #    count in jobs.groupby("state")['name'].nunique().to_dict().items()]
-    #print(f"{len(jobs)} jobs: {', '.join(state_count)}")
-
 
 def main():
     fire.Fire(run)

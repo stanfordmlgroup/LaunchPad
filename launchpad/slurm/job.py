@@ -1,6 +1,7 @@
 import os
 import uuid
 import re
+import pkgutil
 import pandas as pd
 from cachetools.func import ttl_cache
 from subprocess import (check_call, 
@@ -25,9 +26,9 @@ class Job:
  
     
     def compile(self):
-        #template = pkgutil.get_data(__name__, "scripts/sbatch_template.sh").decode()
-        with open("scripts/sbatch_template.sh", "r") as f:
-            template = f.read()
+        template = pkgutil.get_data(__name__, "scripts/sbatch_template.sh").decode()
+        #with open("scripts/sbatch_template.sh", "r") as f:
+        #    template = f.read()
         template = template.replace("@GPUS", f"{self._meta.gpus}")
         template = template.replace("@LOG", f"{self._meta.logpath}")
         template = template.replace("@NAME", f"{self._exp_name}")
@@ -65,6 +66,7 @@ class Job:
 
         return state
     
+    @ttl_cache(ttl=5)
     def get_metrics(self):
         return pd.read_csv(self._get_metrics_path()).tail(1)
                                     
