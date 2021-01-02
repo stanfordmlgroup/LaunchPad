@@ -111,5 +111,5 @@ Please refer to [online sbatch documentation via SchedMD](https://slurm.schedmd.
 ### Experiment parameters
 `hp` section is fully customized by user. They are hyper-parameters we want to scan for the training experiments. 
  
-
-
+---
+Maintainers: [@Hao](mailto:haosheng@cs.stanford.edu)
