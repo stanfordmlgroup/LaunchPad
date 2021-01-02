@@ -15,14 +15,14 @@ jobs:
           command: pip install -e .
           name: Install LaunchPad
       - run:
-          command: lp examples/config.yaml && \
-                   lp examples/config_key.yaml && \
-                   lp examples/config_wait.yaml && \
+          command: lp examples/config.yaml && 
+                   lp examples/config_key.yaml && 
+                   lp examples/config_wait.yaml && 
                    lp examples/config_metrics.yaml
           name: Test compiling examples 
       - run:
-          command: lp examples/config_key.yaml --run shell && \
-                   lp examples/config_wait.yaml --run shell && \
+          command: lp examples/config_key.yaml --run shell && 
+                   lp examples/config_wait.yaml --run shell && 
                    lp examples/config_metrics.yaml --run shell 
           name: Test running examples (shell)
 
