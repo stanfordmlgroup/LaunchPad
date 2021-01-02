@@ -6,7 +6,7 @@ meta:
     repeat: 1
     prefix: demo_key
     gpus: 1
-    logpath: /deep/group/haosheng/temp/log
+    logpath: /deep/group/haosheng/temp/launchpad
     key: ['lr', 'optimizer']
     
 hp: 
