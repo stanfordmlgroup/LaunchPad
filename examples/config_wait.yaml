@@ -8,7 +8,7 @@ meta:
     key: ['wait']
     
 hp: 
-    wait: [1, 2, 5, 10]
+    wait: [1, 2, 5]
 
 sbatch:
     exclude: deep[1-9]

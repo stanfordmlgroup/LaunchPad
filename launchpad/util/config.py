@@ -32,7 +32,8 @@ class Config:
         self.meta['config_path'] = path
 
         if "sandbox" not in self.meta:
-            self.meta['sandbox'] = os.path.abspath("~/.launchpad/log")
+            self.meta['sandbox'] = "~/.launchpad"
+        self.meta.sandbox = os.path.abspath(os.path.expanduser(self.meta.sandbox))
         
         self.meta['log_dir'] = os.path.join(self.meta.sandbox, "log")
         self.meta['sbatch_dir'] = os.path.join(self.meta.sandbox, "sbatch")
