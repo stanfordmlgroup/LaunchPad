@@ -1,14 +1,16 @@
+hp:
+  lr:
+    - 0.1
+    - 0.5
+  optimizer:
+    - SGD
+    - Adam
 meta:
-    script: python /deep/group/haosheng/LaunchPad/example/main.py
-    sandbox: ~/.launchpad
-    mode: grid 
-    sample: 20
-    repeat: 2
-    gpus: 1
-    
-hp: 
-    lr: [0.1, 0.5]
-    optimizer: [SGD, Adam]
-
+  gpus: 1
+  mode: grid
+  repeat: 2
+  sample: 20
+  sandbox: ~/.launchpad
+  script: 'python /deep/group/haosheng/LaunchPad/example/main.py'
 sbatch:
-    mem: 16G      
+  mem: 16G
