@@ -21,7 +21,7 @@ INSTALL_REQUIRES = (
 
 
 def version():
-    return "1.0.2"
+    return "1.1.2"
 
 
 setup(
@@ -47,8 +47,8 @@ setup(
     ],
     keywords='automation, sbatch',
     install_requires=INSTALL_REQUIRES,
-    packages=find_packages(),
-    #py_modules=find_packages(),
+    #packages=find_packages(),
+    py_modules=['launchpad'],
     package_data={'launchpad': ['*.sh']},
     zip_safe=False,
     include_package_data=True,
