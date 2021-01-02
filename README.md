@@ -1,12 +1,13 @@
 # LaunchPad
 [![Build Status](https://circleci.com/gh/stanfordmlgroup/LaunchPad.svg?style=svg&circle-token=00b64008c5dc07a73a311815b5ca0e935291dbb3)](https://circleci.com/gh/stanfordmlgroup/LaunchPad)
+[![CodeFactor](https://www.codefactor.io/repository/github/stanfordmlgroup/launchpad/badge)](https://www.codefactor.io/repository/github/stanfordmlgroup/launchpad)
 [![made-with-python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg)](https://www.python.org/) <br>
-LaunchPad is a quick sbatch launcher for hyper-parameter search. 
-It will compile an YAML config file into a series of sbatch scripts and launch over the cluster.
+LaunchPad is a light-weighted Slurm job launcher designed for hyper-parameter search.
 
 ## Features
 - Consolidated configuration file. 
-- Support random and grid hyperparameter search.   
+- Random and grid hyper-parameter search.   
+- Experiments status and metrics tracking.
 
 ## Installation 
 ```
@@ -16,62 +17,91 @@ It will compile an YAML config file into a series of sbatch scripts and launch o
 ## Config file and example usage
 Here is one config file (`example/config.yaml`):
 ```YAML
+hp:
+  lr:
+    - 0.1
+    - 0.5
+  optimizer:
+    - SGD
+    - Adam
 meta:
-    script: python /deep/group/haosheng/LaunchPad/main.py
-    sandbox: /deep/group/haosheng/temp/
-    mode: grid 
-    sample: 20
-    repeat: 1
-    gpus: 1
-    logpath: /deep/group/haosheng/temp/log
-    
-hp: 
-    lr: [0.1, 0.5]
-    optimizer: [SGD, Adam]
+  gpus: 1
+  mode: grid
+  prefix: demo
+  repeat: 1
+  sandbox: ~/.launchpad  #optional; default to $HOME/.launchpad
+  script: 'python main_key.py'
+sbatch:
+  exclude: deep[1-9]
 ```
 
-You can print out the command lists by `lp config.yaml` or simply `lp`:
+You can print out the experiment CLI lists by `lp examples/config.yaml` or simply `cd examples && lp`:
 ```
 $ lp
-python /deep/group/haosheng/LaunchPad/main.py --lr 0.1 --optimizer SGD --exp_name ff2623c422c8422a875af14545d3ce6f
-python /deep/group/haosheng/LaunchPad/main.py --lr 0.1 --optimizer Adam --exp_name deaa30dce4344a888276c6097e7201b2
-python /deep/group/haosheng/LaunchPad/main.py --lr 0.5 --optimizer SGD --exp_name ba68e25a460649e5888bb4e178e070f4
-python /deep/group/haosheng/LaunchPad/main.py --lr 0.5 --optimizer Adam --exp_name 456744e1553e4726a4dfb9e02b530d7c
+--------------------------------------------------------
+Experiment No.1 -- [demo_key_0.1_SGD]:
+python /sailhome/haosheng/workspace/LaunchPad/examples/main_key.py --lr 0.1 --optimizer SGD --round 0 --exp_name demo_key_0.1_SGD
+Current State: Compiled
+--------------------------------------------------------
+Experiment No.2 -- [demo_key_0.1_Adam]:
+python /sailhome/haosheng/workspace/LaunchPad/examples/main_key.py --lr 0.1 --optimizer Adam --round 0 --exp_name demo_key_0.1_Adam
+Current State: Compiled
+--------------------------------------------------------
+Experiment No.3 -- [demo_key_0.5_SGD]:
+python /sailhome/haosheng/workspace/LaunchPad/examples/main_key.py --lr 0.5 --optimizer SGD --round 0 --exp_name demo_key_0.5_SGD
+Current State: Compiled
+--------------------------------------------------------
+Experiment No.4 -- [demo_key_0.5_Adam]:
+python /sailhome/haosheng/workspace/LaunchPad/examples/main_key.py --lr 0.5 --optimizer Adam --round 0 --exp_name demo_key_0.5_Adam
+Current State: Compiled
 ```
 
 If you want auto-generate meaningful `exp_name` you can specify the `key` arguments under `meta` section:
 ```YAML
 ...
-    key: ['lr', 'optimizer']
+   key:
+    - lr
+    - optimizer
 ...
 ```
 and, 
 ```
 $ lp config_key.yaml
-python /deep/group/haosheng/LaunchPad/main.py --lr 0.1 --optimizer SGD --exp_name 0.1_SGD_round_0
-python /deep/group/haosheng/LaunchPad/main.py --lr 0.1 --optimizer Adam --exp_name 0.1_Adam_round_0
-python /deep/group/haosheng/LaunchPad/main.py --lr 0.5 --optimizer SGD --exp_name 0.5_SGD_round_0
-python /deep/group/haosheng/LaunchPad/main.py --lr 0.5 --optimizer Adam --exp_name 0.5_Adam_round_0
+--------------------------------------------------------
+Experiment No.1 -- [demo_key_0.1_SGD]:
+python /sailhome/haosheng/workspace/LaunchPad/examples/main_key.py --lr 0.1 --optimizer SGD --round 0 --exp_name demo_key_0.1_SGD
+Current State: Compiled
+--------------------------------------------------------
+Experiment No.2 -- [demo_key_0.1_Adam]:
+python /sailhome/haosheng/workspace/LaunchPad/examples/main_key.py --lr 0.1 --optimizer Adam --round 0 --exp_name demo_key_0.1_Adam
+Current State: Compiled
+--------------------------------------------------------
+Experiment No.3 -- [demo_key_0.5_SGD]:
+python /sailhome/haosheng/workspace/LaunchPad/examples/main_key.py --lr 0.5 --optimizer SGD --round 0 --exp_name demo_key_0.5_SGD
+Current State: Compiled
+--------------------------------------------------------
+Experiment No.4 -- [demo_key_0.5_Adam]:
+python /sailhome/haosheng/workspace/LaunchPad/examples/main_key.py --lr 0.5 --optimizer Adam --round 0 --exp_name demo_key_0.5_Adam
+Current State: Compiled
 ```
 
-Once you think the configuration is ready for launching over the cluster, you can run 
+Once you think the configuration is ready, you can launch sbatch experiments:
 ```
 lp config.yaml --run sbatch
 ```
 
-Auto-generated sbatch scripts and logs can be found in `sandbox` and `logpath` folder. 
+Auto-generated sbatch scripts and logs can be found in `sbatch` and `log` folder under `sandbox` specified in the config. 
 
 ## Parameters
 ### Meta parameters
 `meta` section contains all the parameters that control the compiling of the sbatch scripts. 
 - `script`: The bash command line to run.
 - `prefix`: A prefix tag that will be added to all `exp_name`.
-- `sandbox`: A temp folder path to store all generated sbatch scripts.
+- `sandbox`: A temp folder path to store all sbatch scripts and logs.
 - `mode`: One of `["grid", "random"]`. Either to perform grid search or random search for the hyper-parameters combinations. 
 - `repeat`: Round of repeat experiments. Only effective when `mode` is `grid`.
 - `gpus`: Number of gpus to use. 
 - `samples`: Number of total samples. Only effective when `mode` is `random`. 
-- `logpath`: Default path to save sbatch logs.
 - `keys`: Key experiment parameters to identify each experiment. The `exp_name` will be a underline concatenation of all the parameters specified here. If not given a random uuid is used as `exp_name`. 
 
 ### Sbatch parameters
@@ -79,7 +109,7 @@ Auto-generated sbatch scripts and logs can be found in `sandbox` and `logpath` f
 Please refer to [online sbatch documentation via SchedMD](https://slurm.schedmd.com/sbatch.html) for the complete list of parameters. 
 
 ### Experiment parameters
-`hp` section is purely defined by user. They are hyper-parameters we want to scan for the training experiments. 
+`hp` section is fully customized by user. They are hyper-parameters we want to scan for the training experiments. 
  
 
 
