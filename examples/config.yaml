@@ -8,9 +8,9 @@ hp:
 meta:
   gpus: 1
   mode: grid
-  repeat: 2
-  sample: 20
+  prefix: demo
+  repeat: 1
   sandbox: ~/.launchpad
-  script: 'python /deep/group/haosheng/LaunchPad/example/main.py'
+  script: 'python main_key.py'
 sbatch:
-  mem: 16G
+  exclude: deep[1-9]
