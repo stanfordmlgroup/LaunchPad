@@ -1,13 +1,11 @@
 meta:
     script: python main_metrics.py
-    sandbox: /deep/group/haosheng/temp/
     mode: grid 
     sample: 20
     prefix: demo_metrics
     repeat: 1
     gpus: 1
-    logpath: /deep/group/haosheng/temp/launchpad
-    metrics_path: /deep/group/haosheng/temp/launchpad/{exp_name}/metrics.csv
+    metrics_path: ~/.launchpad/{exp_name}/metrics.csv
     key: ['wait']
     
 hp: 

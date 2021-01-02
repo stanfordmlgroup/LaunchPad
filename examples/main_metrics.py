@@ -8,7 +8,7 @@ def main(**kwargs):
     wait = kwargs.get("wait")
     exp_name = kwargs.get("exp_name")
     
-    metrics_path = f"/deep/group/haosheng/temp/launchpad/{exp_name}/metrics.csv"
+    metrics_path = f"~/.launchpad/{exp_name}/metrics.csv"
     os.makedirs(os.path.dirname(metrics_path), exist_ok=True)
 
     print(f"\tIn [main_metrics.py] -- {exp_name}:")

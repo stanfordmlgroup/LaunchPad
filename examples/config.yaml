@@ -1,11 +1,10 @@
 meta:
     script: python /deep/group/haosheng/LaunchPad/example/main.py
-    sandbox: /deep/group/haosheng/temp/
+    sandbox: ~/.launchpad
     mode: grid 
     sample: 20
     repeat: 1
     gpus: 1
-    logpath: /deep/group/haosheng/temp/launchpad
     
 hp: 
     lr: [0.1, 0.5]

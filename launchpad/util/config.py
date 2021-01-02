@@ -30,5 +30,15 @@ class Config:
             _config = yaml.load(f, Loader=yaml.SafeLoader)
         self.meta = Args(_config['meta'])
         self.meta['config_path'] = path
+
+        if "sandbox" not in self.meta:
+            self.meta['sandbox'] = os.path.abspath("~/.launchpad/log")
+        
+        self.meta['log_dir'] = os.path.join(self.meta.sandbox, "log")
+        self.meta['sbatch_dir'] = os.path.join(self.meta.sandbox, "sbatch")
+        os.makedirs(self.meta.log_dir, exist_ok=True) 
+        os.makedirs(self.meta.sbatch_dir, exist_ok=True) 
+
+
         self.hp = Args(_config['hp'])
         self.sbatch = Args(_config['sbatch'])
