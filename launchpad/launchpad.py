@@ -7,7 +7,7 @@ import pandas as pd
 import logging
 import shutil
 
-from .slurm import Smanager, Job
+from .slurm import Job
 from .util import colorful_state, Config, Args
 
 logger = logging.getLogger("LaunchPad")

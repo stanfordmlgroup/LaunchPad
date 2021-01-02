@@ -73,18 +73,18 @@ class Job:
                                     
     def shell(self): 
         try:
-            check_call(self._exec_line, shell=True)
+            check_call(self._exec_line.split())
         except CalledProcessError as e:
             print(e.output)
 
     def sbatch(self): 
         self.compile()
-        output = check_output(f"sbatch {self._sbatch_filepath}", shell=True)
+        output = check_output(["sbatch", self._sbatch_filepath])
         x = re.findall("Submitted batch job \d+", str(output))
         self._id = int(x[0].split()[-1])
 
     def cancel(self):
-        check_output(f"scancel -n {self._exp_name}", shell=True)
+        check_output(["scancel", "-n", self._exp_name])
     
     def _get_metrics_path(self):
         metrics_path = self._meta.get("metrics_path", None)
