@@ -20,27 +20,6 @@ console.setFormatter(formatter)
 logger.addHandler(console)
 
 
-def check_state(exp_name, meta):
-    username = os.environ['USER']
-    smanager = Smanager(user=username)
-    state = smanager.get_state(exp_name)
-    if state == "N":
-        log_filepath = os.path.join(meta.logpath, f"{exp_name}.log")
-        if os.path.exists(log_filepath):
-            state = "Finished"
-        else:
-            sbatch_filepath = os.path.join(meta.sandbox, f"{exp_name}.sh")
-            if os.path.exists(sbatch_filepath):
-                state = "Compiled"
-            else:
-                state = "Unknown"
-    elif state == "R":
-        state = "Running"
-    elif state == "PD":
-        state = "Pending"
-    return state
-
-
 def run(config="config.yaml",
         run="compile"):
     if os.path.isdir(config):
@@ -66,29 +45,29 @@ def run(config="config.yaml",
             if state == "Finish":
                 if 'override' in meta and meta['override']:
                     logger.warning(
-                        f"Override existing experiment [{exp_name}].")
+                        f"Override existing experiment [{job._exp_name}].")
                 else:
-                    logger.warning(f"Skip existing experiment [{exp_name}].")
-                    continue
-            if state == "Running":
+                    logger.warning(f"Skip existing experiment [{job._exp_name}].")
+            elif state == "Running":
                 logger.warning(
-                    f"Skip experiment [{exp_name}], which is already running.")
-                continue
-            elif state == "Compiled":
-                logger.info(f"Recompiled experiment [{exp_name}].")
-            
-            # Execution 
-            if run == "shell":
-                job.shell()
-            elif run == "sbatch":
-                job.sbatch()
+                    f"Skip experiment [{job._exp_name}], which is already running.")
+            else: 
+                if state == "Compiled":
+                    logger.info(f"Recompiled experiment [{job._exp_name}].")
+
+                # Execution 
+                if run == "shell":
+                    job.shell()
+                elif run == "sbatch":
+                    job.sbatch()
 
             print("-" * col)
             print(f"Experiment No.{idx+1} -- [{job._exp_name}]:\n{job._exec_line}")
-            print(f"Current State: {state}") 
+            print(f"Current State: {colorful_state(state)}") 
             if state == "Running":
                 print(f"Slurm job ID: {job._id}")
-
+                print("Latest metrics: ")
+                print(f"{job.get_metrics()}")
 
     #jobs = pd.DataFrame(jobs)
     #print("-" * col)

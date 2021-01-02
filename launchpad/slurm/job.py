@@ -1,13 +1,12 @@
 import os
 import uuid
 import re
+import pandas as pd
 from cachetools.func import ttl_cache
 from subprocess import (check_call, 
                         check_output,
                         CalledProcessError)
 
-from .smanager import Smanager
-from util import colorful_state
 
 class Job:
     def __init__(self, config):
@@ -18,6 +17,7 @@ class Job:
         self._format = '%.18i %.9P %.100j %.8u %.2t %.10M %.6D %R'
         self._id = None
         self._exp_name = self._get_exp_name()
+        self._hp['exp_name'] = self._exp_name
         self._exec_line = self._get_exec_line()
         self._sbatch_config = self._get_sbatch_config()
         self._sbatch_filepath = os.path.join(self._meta.sandbox, f"{self._exp_name}.sh")
@@ -63,11 +63,11 @@ class Job:
                 else:
                     state = "Unknown"
 
-        return colorful_state(state)
+        return state
     
     def get_metrics(self):
-        pass
-
+        return pd.read_csv(self._get_metrics_path()).tail(1)
+                                    
     def shell(self): 
         try:
             check_call(self._exec_line, shell=True)
@@ -83,6 +83,13 @@ class Job:
     def cancel(self):
         pass
     
+    def _get_metrics_path(self):
+        metrics_path = self._meta.get("metrics_path", None)
+        if metrics_path is None:
+            raise ValueError("[metrics_path] has not been set up!")
+        metrics_path = metrics_path.format(**self._hp)
+        return metrics_path
+
     def _get_exec_line(self):
         executor, script_path = self._meta.script.split()
         config_path = self._meta.config_path
