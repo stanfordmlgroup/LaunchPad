@@ -3,7 +3,7 @@ meta:
     sandbox: ~/.launchpad
     mode: grid 
     sample: 20
-    repeat: 1
+    repeat: 2
     gpus: 1
     
 hp: 
