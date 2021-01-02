@@ -21,16 +21,14 @@ class Job:
         self._hp['exp_name'] = self._exp_name
         self._exec_line = self._get_exec_line()
         self._sbatch_config = self._get_sbatch_config()
-        self._sbatch_filepath = os.path.join(self._meta.sandbox, f"{self._exp_name}.sh")
-        self._log_filepath = os.path.join(self._meta.logpath, f"{self._exp_name}.log")
+        self._sbatch_filepath = os.path.join(self._meta.sbatch_dir, f"{self._exp_name}.sh")
+        self._log_filepath = os.path.join(self._meta.log_dir, f"{self._exp_name}.log")
  
     
     def compile(self):
         template = pkgutil.get_data(__name__, "scripts/sbatch_template.sh").decode()
-        #with open("scripts/sbatch_template.sh", "r") as f:
-        #    template = f.read()
         template = template.replace("@GPUS", f"{self._meta.gpus}")
-        template = template.replace("@LOG", f"{self._meta.logpath}")
+        template = template.replace("@LOG", f"{self._meta.log_dir}")
         template = template.replace("@NAME", f"{self._exp_name}")
         template = template.replace("@CONFIG", f"{self._sbatch_config}")
         template = template.replace("@COMMAND", f"{self._exec_line}")
@@ -83,7 +81,7 @@ class Job:
         self._id = int(x[0].split()[-1])
 
     def cancel(self):
-        pass
+        check_output(f"scancel -n {self._exp_name}", shell=True)
     
     def _get_metrics_path(self):
         metrics_path = self._meta.get("metrics_path", None)

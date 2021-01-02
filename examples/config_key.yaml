@@ -1,12 +1,10 @@
 meta:
     script: python main_key.py
-    sandbox: /deep/group/haosheng/temp/
     mode: grid 
     sample: 20
     repeat: 1
     prefix: demo_key
     gpus: 1
-    logpath: /deep/group/haosheng/temp/launchpad
     key: ['lr', 'optimizer']
     
 hp: 
