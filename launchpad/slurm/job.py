@@ -14,7 +14,8 @@ class Job:
         self._meta = config.meta
         self._hp = config.hp
         self._sbatch = config.sbatch
-    
+        
+        self._format = '%.18i %.9P %.100j %.8u %.2t %.10M %.6D %R'
         self._id = None
         self._exp_name = self._get_exp_name()
         self._exec_line = self._get_exec_line()
@@ -38,7 +39,22 @@ class Job:
     @ttl_cache(ttl=30)
     def get_state(self):
         state = None
-        if self._id is None:
+        cmd = ['squeue', '-n', self._exp_name, '-o', self._format]
+        smines = check_output(cmd)
+        smines = smines.decode('utf8').split('\n')
+        states = [None for _ in range(len(smines) - 2)]
+        for i, smine in enumerate(smines[1:-1]):
+            smine = smine.split(' ')
+            s = [s for s in smine if s is not '']
+            state = s[4]
+            self._id = s[0]
+
+        if state is not None:
+            if state == "R":
+                state = "Running"
+            elif state == "PD":
+                state = "Pending"
+        else:
             if os.path.exists(self._log_filepath):
                 state = "Finished"
             else:
@@ -46,20 +62,6 @@ class Job:
                     state = "Compiled"
                 else:
                     state = "Unknown"
-        else:
-            cmd = ['squeue', '-j', self._id, '-o', self._format]
-            smines = check_output(cmd)
-            smines = smines.decode('utf8').split('\n')
-            states = [None for _ in range(len(smines) - 2)]
-            for i, smine in enumerate(smines[1:-1]):
-                smine = smine.split(' ')
-                s = [s for s in smine if s is not '']
-                states[i] = s[4]
-            state = states[0]
-            if state == "R":
-                state = "Running"
-            elif state == "PD":
-                state = "Pending"
 
         return colorful_state(state)
     

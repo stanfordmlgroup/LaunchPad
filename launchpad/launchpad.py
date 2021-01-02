@@ -86,7 +86,7 @@ def run(config="config.yaml",
             print("-" * col)
             print(f"Experiment No.{idx+1} -- [{job._exp_name}]:\n{job._exec_line}")
             print(f"Current State: {state}") 
-            if run == "sbatch":
+            if state == "Running":
                 print(f"Slurm job ID: {job._id}")
 
 
