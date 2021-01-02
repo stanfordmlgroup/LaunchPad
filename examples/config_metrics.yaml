@@ -1,15 +1,17 @@
+hp:
+  wait:
+    - 1
+    - 2
+    - 5
 meta:
-    script: python main_metrics.py
-    mode: grid 
-    sample: 20
-    prefix: demo_metrics
-    repeat: 1
-    gpus: 1
-    metrics_path: ~/.launchpad/{exp_name}/metrics.csv
-    key: ['wait']
-    
-hp: 
-    wait: [1, 2, 5]
-
+  gpus: 1
+  key:
+    - wait
+  metrics_path: ~/.launchpad/{exp_name}/metrics.csv
+  mode: grid
+  prefix: demo_metrics
+  repeat: 1
+  sample: 20
+  script: 'python main_metrics.py'
 sbatch:
-    mem: 16G      
+  mem: 16G

@@ -1,16 +1,19 @@
+hp:
+  lr:
+    - 0.1
+    - 0.5
+  optimizer:
+    - SGD
+    - Adam
 meta:
-    script: python main_key.py
-    mode: grid 
-    sample: 20
-    repeat: 1
-    prefix: demo_key
-    gpus: 1
-    key: ['lr', 'optimizer']
-    
-hp: 
-    lr: [0.1, 0.5]
-    optimizer: [SGD, Adam]
-
+  gpus: 1
+  key:
+    - lr
+    - optimizer
+  mode: grid
+  prefix: demo_key
+  repeat: 1
+  sample: 20
+  script: 'python main_key.py'
 sbatch:
-    exclude: deep[1-9]
-     
+  exclude: deep[1-9]

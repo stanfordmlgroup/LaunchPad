@@ -19,5 +19,3 @@ def colorful_state(state):
         return f"{Colors.BOLD}Compiled{Colors.ENDC}"
     else:
         return f"{Colors.FAIL}Unknown{Colors.ENDC}"
-
-

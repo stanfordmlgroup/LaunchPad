@@ -1,15 +1,16 @@
+hp:
+  wait:
+    - 1
+    - 2
+    - 5
 meta:
-    script: python main_wait.py
-    mode: grid 
-    sample: 20
-    repeat: 1
-    prefix: demo_wait
-    gpus: 1
-    key: ['wait']
-    
-hp: 
-    wait: [1, 2, 5]
-
+  gpus: 1
+  key:
+    - wait
+  mode: grid
+  prefix: demo_wait
+  repeat: 1
+  sample: 20
+  script: 'python main_wait.py'
 sbatch:
-    exclude: deep[1-9]
-     
+  exclude: deep[1-9]

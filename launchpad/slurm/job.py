@@ -115,4 +115,3 @@ class Job:
     def _get_sbatch_config(self):
         return "\n".join(
                 [f"#SBATCH --{k}={v}" for k, v in self._sbatch.items()])
-
