@@ -9,7 +9,7 @@ meta:
     key: ['wait']
     
 hp: 
-    wait: [1, 2, 5, 10]
+    wait: [1, 2, 5]
 
 sbatch:
     mem: 16G      
