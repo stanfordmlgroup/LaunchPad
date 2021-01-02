@@ -39,14 +39,17 @@ class Job:
     def get_state(self):
         state = None
         cmd = ['squeue', '-n', self._exp_name, '-o', self._format]
-        smines = check_output(cmd)
-        smines = smines.decode('utf8').split('\n')
-        states = [None for _ in range(len(smines) - 2)]
-        for i, smine in enumerate(smines[1:-1]):
-            smine = smine.split(' ')
-            s = [s for s in smine if s is not '']
-            state = s[4]
-            self._id = s[0]
+        try:
+            smines = check_output(cmd)
+            smines = smines.decode('utf8').split('\n')
+            states = [None for _ in range(len(smines) - 2)]
+            for i, smine in enumerate(smines[1:-1]):
+                smine = smine.split(' ')
+                s = [s for s in smine if s != '']
+                state = s[4]
+                self._id = s[0]
+        except FileNotFoundError:
+            pass # e.g. squeue not installed
 
         if state is not None:
             if state == "R":
