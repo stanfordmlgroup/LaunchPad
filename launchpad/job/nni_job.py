@@ -17,6 +17,19 @@ from .slurm_job import SlurmJob
 from .util import parse_time
 
 
+class NNISlurmJob(SlurmJob):
+    def __init__(self, config):
+        _config = copy.deepcopy(config)
+        # FIXME: only K gpu is visible per node if request K each time
+        _config.meta.gpus = 4 
+        _config.meta.pop("key", None)
+        super().__init__(_config)
+        self._exec_line = f"sleep {parse_time(config.nni.maxExecDuration)}"
+    
+    def _get_exp_name(self): 
+        self._exp_name = self._meta.prefix + "_slurm_job_" + uuid.uuid4().hex
+
+
 class NNIJob(BaseJob):
     def __init__(self, config): 
         super().__init__(config)
@@ -31,7 +44,6 @@ class NNIJob(BaseJob):
         self._get_gpus()
         self._compile_hp()
         self._compile_nni_config()
-        print(self._nodes)
         #with open(self._nni_config_path, 'w') as f:
         #    f.write(template)
         # TODO: NNI config
@@ -56,12 +68,12 @@ class NNIJob(BaseJob):
             nodes = []
             for job in self._slurm_jobs:
                 info = job.get_info()
-                print(info)
                 if info is not None \
                    and info['state'] == 'R': 
                     nodes.append(info['nodelist'])
             print(f"[{len(nodes)} / {len(self._slurm_jobs)}] is ready.")
         self._nodes = set(nodes)
+        print(f"GPU resources is ready: {list(self._nodes)}")
 
     def _release_gpus(self):
         for job in self._slurm_jobs:
@@ -71,14 +83,9 @@ class NNIJob(BaseJob):
         pass 
 
     def _compile_slurm_job(self):
-        config = copy.deepcopy(self._config)
-        # FIXME: only K gpu is visible per node
-        config.meta.gpus = 1
-        config.meta.prefix += "_slurm_job"
-        config.meta.pop("key")
-        for _ in range(self._meta.gpus):
-            slurm_job = SlurmJob(config)
-            slurm_job._exec_line = f"sleep {parse_time(config.nni.maxExecDuration)}"
+        # FIXME: only K gpu is visible per node if request K each time
+        for _ in range((self._meta.gpus+3) // 4):
+            slurm_job = NNISlurmJob(self._config)
             self._slurm_jobs.append(slurm_job)
 
     def _compile_hp(self):
