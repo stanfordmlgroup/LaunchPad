@@ -16,6 +16,7 @@ LaunchPad is a light-weighted Slurm job launcher designed for hyper-parameter se
 ```
 
 ## Config file and example usage
+### Basic usage
 Here is one config file (`example/config.yaml`):
 ```YAML
 hp:
@@ -57,6 +58,7 @@ python /sailhome/haosheng/workspace/LaunchPad/examples/main_key.py --lr 0.5 --op
 Current State: Compiled
 ```
 
+### Auto `exp_name` generation 
 If you want auto-generate meaningful `exp_name` you can specify the `key` arguments under `meta` section:
 ```YAML
 ...
@@ -92,6 +94,47 @@ lp config.yaml --run sbatch
 ```
 
 Auto-generated sbatch scripts and logs can be found in `sbatch` and `log` folder under `sandbox` specified in the config. 
+
+### NNI integration 
+Launchpad is also integrated with [NNI](https://github.com/microsoft/nni). By filling the `nni` section in the config file like `example/config_nni.yaml`, one can launch jobs like the following:
+```
+(launchpad) haosheng@deep21:~/workspace/LaunchPad$ lp examples/config_nni.yaml --run
+Password:
+Launching 2 slurm jobs:
+sbatch: spank: option "x11" provided by both x11.so and x11.so
+sbatch: spank: option "x11" provided by both x11.so and x11.so
+Sleep 3 seconds before retrieving slurm jobs status ...
+[2 / 2] is ready.
+GPU resources is ready: ['deep14', 'deep10']
+Dump HP json file to [/sailhome/haosheng/.launchpad/demo_nni/nni/demo_nni.json].
+Dump nni config file to [/sailhome/haosheng/.launchpad/demo_nni/nni/demo_nni.yaml].
+Output from NNI:
+INFO:  Starting restful server...
+INFO:  Successfully started Restful server!
+INFO:  Setting remote config...
+INFO:  Successfully set remote config!
+INFO:  Starting experiment...
+INFO:  Successfully started experiment!
+------------------------------------------------------------------------------------
+The experiment id is lyB7sHfD
+The Web UI urls are: deep21.stanford.edu:8082
+------------------------------------------------------------------------------------
+
+You can use these commands to get more information about the experiment
+------------------------------------------------------------------------------------
+         commands                       description
+1. nnictl experiment show        show the information of experiments
+2. nnictl trial ls               list all of trial jobs
+3. nnictl top                    monitor the status of running experiments
+4. nnictl log stderr             show stderr log content
+5. nnictl log stdout             show stdout log content
+6. nnictl stop                   stop an experiment
+7. nnictl trial kill             kill a trial job by id
+8. nnictl --help                 get help information about nnictl
+------------------------------------------------------------------------------------
+Command reference document https://nni.readthedocs.io/en/latest/Tutorial/Nnictl.html
+------------------------------------------------------------------------------------
+```            
 
 ## Parameters
 ### Meta parameters
