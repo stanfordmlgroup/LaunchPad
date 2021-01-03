@@ -7,10 +7,11 @@ from cachetools.func import ttl_cache
 from subprocess import (check_call, 
                         check_output,
                         CalledProcessError)
-from .job import Job
+
+from .base import BaseJob
 
 
-class SlurmJob(Job):
+class SlurmJob(BaseJob):
     def __init__(self, config):
         super().__init__(config)
         
@@ -31,19 +32,31 @@ class SlurmJob(Job):
         with open(self._sbatch_filepath, 'w') as f:
             f.write(template)
     
+    def get_info(self):
+        cmd = ['squeue', '-n', self._exp_name, '-o', self._format]
+        smines = check_output(cmd)
+        smines = smines.decode('utf8').split('\n')
+        states = [None for _ in range(len(smines) - 2)]
+        for i, smine in enumerate(smines[1:-1]):
+            smine = smine.split(' ')
+            s = [s for s in smine if s != '']
+            return {"id": s[0], 
+                    "partition": s[1],
+                    "name": s[2],
+                    "user": s[3],
+                    "state": s[4],
+                    "time": s[5],
+                    "node": s[6],
+                    "nodelist": s[7]}
+ 
+
     @ttl_cache(ttl=30)
     def get_state(self):
         state = None
-        cmd = ['squeue', '-n', self._exp_name, '-o', self._format]
         try:
-            smines = check_output(cmd)
-            smines = smines.decode('utf8').split('\n')
-            states = [None for _ in range(len(smines) - 2)]
-            for i, smine in enumerate(smines[1:-1]):
-                smine = smine.split(' ')
-                s = [s for s in smine if s != '']
-                state = s[4]
-                self._id = s[0]
+            s = self.get_info()
+            state = s[4]
+            self._id = s[0]
         except FileNotFoundError:
             pass # e.g. squeue not installed
 

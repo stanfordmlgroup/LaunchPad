@@ -9,7 +9,7 @@ from subprocess import (check_call,
                         CalledProcessError)
 
 
-class Job:
+class BaseJob:
     def __init__(self, config):
         self._meta = config.meta
         self._hp = config.hp
@@ -65,7 +65,7 @@ class Job:
             exp_name = uuid.uuid4().hex
         if "prefix" in self._meta:
             exp_name = self._meta.prefix + "_" + exp_name
-        self._exp_name = self._hp['exp_name'] = self._exp_name
+        self._exp_name = self._hp['exp_name'] = exp_name
 
     def _get_sbatch_config(self):
         return "\n".join(

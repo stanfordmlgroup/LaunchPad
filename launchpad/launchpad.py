@@ -7,7 +7,7 @@ import pandas as pd
 import logging
 import shutil
 
-from .exp import create_job 
+from .job import create_job 
 from .util import colorful_state, Config, Args
 
 logger = logging.getLogger("LaunchPad")
@@ -27,6 +27,7 @@ def run(config="config.yaml",
     if _config.meta.mode == "nni":
         job = create_job(_config)
         job.compile()
+        job.cancel()
         return 
     for idx, c in enumerate(_config):
         job = create_job(c)

@@ -8,9 +8,9 @@ from subprocess import (check_call,
                         check_output,
                         CalledProcessError)
 
-from .job import Job
+from .base import BaseJob
 
-class ShellJob(Job):
+class ShellJob(BaseJob):
     def __init__(self, config):
         super().__init__(config)
         self._state = "Compiled"
