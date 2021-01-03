@@ -14,10 +14,10 @@ class Job:
         self._meta = config.meta
         self._hp = config.hp
         self._sbatch = config.sbatch
+        self._nni = config.nni
         
-        self._exp_name = self._get_exp_name()
-        self._hp['exp_name'] = self._exp_name
-        self._exec_line = self._get_exec_line()
+        self._get_exp_name()
+        self._get_exec_line()
         self._log_filepath = os.path.join(self._meta.log_dir, f"{self._exp_name}.log")
  
     
@@ -54,9 +54,9 @@ class Job:
         config_path = self._meta.config_path
         script_path = os.path.abspath(os.path.join(os.path.dirname(config_path),
                                       script_path))
-        exec_line = " ".join([executor, script_path] \
+        self._code_dir = os.path.dirname(script_path)
+        self._exec_line = " ".join([executor, script_path] \
                 + [f"--{k} {v}" for k, v in self._hp.items()])
-        return exec_line
 
     def _get_exp_name(self): 
         if "key" in self._meta:
@@ -65,8 +65,7 @@ class Job:
             exp_name = uuid.uuid4().hex
         if "prefix" in self._meta:
             exp_name = self._meta.prefix + "_" + exp_name
-
-        return exp_name
+        self._exp_name = self._hp['exp_name'] = self._exp_name
 
     def _get_sbatch_config(self):
         return "\n".join(
