@@ -2,6 +2,7 @@ import yaml
 from subprocess import check_call, check_output
 import uuid
 import fire
+import time
 import os
 import pandas as pd
 import logging
@@ -26,7 +27,8 @@ def run(config="config.yaml",
     _config = Config(config)
     if _config.meta.mode == "nni":
         job = create_job(_config)
-        job.compile()
+        job.run()
+        time.sleep(200)
         job.cancel()
         return 
     for idx, c in enumerate(_config):
