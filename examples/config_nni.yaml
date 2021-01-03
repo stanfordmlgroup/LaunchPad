@@ -12,12 +12,12 @@ meta:
   repeat: 1
   sample: 20
   script: 'python main_metrics.py'
+  port: 8082
 sbatch:
   mem: 16G
 nni:
   authorName: Hao
   experimentName: 'Demo HP search experiments'
-  maxTrialNumPerGpu: 1 
   maxExecDuration: 2h
   maxTrialNum: 50
   trialConcurrency: 12

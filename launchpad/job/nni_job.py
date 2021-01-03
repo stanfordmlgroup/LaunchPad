@@ -1,12 +1,14 @@
 import os
 import yaml
 import time
+import socket
 import copy
 import sys
 import uuid
 import json
 import re
-import pkgutil
+import getpass
+import traceback
 import pandas as pd
 from subprocess import (check_call, 
                         check_output,
@@ -40,30 +42,41 @@ class NNIJob(BaseJob):
         self._nodes = None
 
     def compile(self):
+        self._passwd = getpass.getpass()
         self._compile_slurm_job()
         self._get_gpus()
         self._compile_hp()
         self._compile_nni_config()
-        #with open(self._nni_config_path, 'w') as f:
-        #    f.write(template)
-        # TODO: NNI config
     
     
     def run(self): 
         self.compile()
-        output = check_output(["nnictl", "create", "--config", self._nni_config_path])
+        try:
+            output = check_output(["nnictl", "create", 
+                        "--config", self._nni_config_path, 
+                        "--port", str(self._meta.port)])
+            print("Output from NNI:")
+            print(output.decode("utf-8"))
+        except CalledProcessError as e:
+            print(f"Error from NNI (return code={e.returncode}):")
+            print(e.output.decode("utf-8"))
+            raise e
 
     def cancel(self):
-        #check_output(["nnictl", "stop"])
+        check_output(["nnictl", "stop"])
         self._release_gpus()
+    
+    def __del__(self):
+        self.cancel()
 
     def _get_gpus(self):
+        print(f"Launching {len(self._slurm_jobs)} slurm jobs: ")
         for job in self._slurm_jobs:
             job.run()
-            print(job._log_filepath)
+
         nodes = []
         while len(nodes) != len(self._slurm_jobs):
-            print("Sleep 3 seconds before retrieving slurm jobs status...")
+            print("Sleep 3 seconds before retrieving slurm jobs status ...")
             time.sleep(3)
             nodes = []
             for job in self._slurm_jobs:
@@ -76,6 +89,7 @@ class NNIJob(BaseJob):
         print(f"GPU resources is ready: {list(self._nodes)}")
 
     def _release_gpus(self):
+        print(f"Release GPU resources {list(self._nodes)} ...")
         for job in self._slurm_jobs:
             job.cancel()
 
@@ -99,10 +113,23 @@ class NNIJob(BaseJob):
     def _compile_nni_config(self): 
         self._nni['searchSpacePath'] = self._nni_hp_path
         self._nni['logDir'] = self._meta.nni_dir
-        self._nni['trial'] = {"gpuNum": self._meta.gpus,
+        # FIXME: allow more than 1 gpus per trial
+        self._nni['trial'] = {"gpuNum": 1,
                               "command": self._exec_line,
                               "codeDir": self._code_dir}
         self._nni['trainingServicePlatform'] = "remote"
+
+        username = os.environ['USER']
+        machine_list = []
+        conda_env = os.environ['CONDA_DEFAULT_ENV']
+        pre_command = f"conda deactivate && conda activate {conda_env}"
+        for node in self._nodes:
+            machine_list.append({"ip": node + ".stanford.edu",
+                                 "username": username,
+                                 "passwd": self._passwd, 
+                                 "preCommand": pre_command})
+        self._nni['machineList'] = machine_list
+        self._nni['nniManagerIp'] = socket.gethostname()
 
         with open(self._nni_config_path, 'w') as f:
             yaml.dump(dict(self._nni), f)
@@ -111,4 +138,12 @@ class NNIJob(BaseJob):
 
     def _get_exp_name(self): 
         self._exp_name = self._meta.prefix
+    
+    def _get_exec_line(self):
+        executor, script_path = self._meta.script.split()
+        config_path = self._meta.config_path
+        script_path = os.path.abspath(os.path.join(os.path.dirname(config_path),
+                                      script_path))
+        self._code_dir = os.path.dirname(script_path)
+        self._exec_line = " ".join([executor, script_path])
 
