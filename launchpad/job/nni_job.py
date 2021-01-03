@@ -1,5 +1,7 @@
 import os
 import yaml
+import time
+import copy
 import sys
 import uuid
 import json
@@ -9,42 +11,75 @@ import pandas as pd
 from subprocess import (check_call, 
                         check_output,
                         CalledProcessError)
-from .job import Job
+
+from .base import BaseJob
+from .slurm_job import SlurmJob
+from .util import parse_time
 
 
-class NNIJob(Job):
+class NNIJob(BaseJob):
     def __init__(self, config): 
         super().__init__(config)
-        
+        self._config = config
         self._nni_hp_path = os.path.join(self._meta.nni_dir, f"{self._exp_name}.json")
         self._nni_config_path = os.path.join(self._meta.nni_dir, f"{self._exp_name}.yaml")
-        self._gpus = []
+        self._slurm_jobs = []
+        self._nodes = None
 
     def compile(self):
+        self._compile_slurm_job()
+        self._get_gpus()
         self._compile_hp()
         self._compile_nni_config()
+        print(self._nodes)
         #with open(self._nni_config_path, 'w') as f:
         #    f.write(template)
         # TODO: NNI config
     
     
     def run(self): 
-        self._get_gpus()
         self.compile()
         output = check_output(["nnictl", "create", "--config", self._nni_config_path])
 
     def cancel(self):
-        check_output(["nnictl", "stop"])
+        #check_output(["nnictl", "stop"])
         self._release_gpus()
 
     def _get_gpus(self):
-        for _ in range(self._meta.gpus):
-            pass 
-            # TODO: get gpus using sbatch sleeping jobs
-        pass
-    
+        for job in self._slurm_jobs:
+            job.run()
+            print(job._log_filepath)
+        nodes = []
+        while len(nodes) != len(self._slurm_jobs):
+            print("Sleep 3 seconds before retrieving slurm jobs status...")
+            time.sleep(3)
+            nodes = []
+            for job in self._slurm_jobs:
+                info = job.get_info()
+                print(info)
+                if info is not None \
+                   and info['state'] == 'R': 
+                    nodes.append(info['nodelist'])
+            print(f"[{len(nodes)} / {len(self._slurm_jobs)}] is ready.")
+        self._nodes = set(nodes)
+
+    def _release_gpus(self):
+        for job in self._slurm_jobs:
+            job.cancel()
+
     def _prompt_key(self):
         pass 
+
+    def _compile_slurm_job(self):
+        config = copy.deepcopy(self._config)
+        # FIXME: only K gpu is visible per node
+        config.meta.gpus = 1
+        config.meta.prefix += "_slurm_job"
+        config.meta.pop("key")
+        for _ in range(self._meta.gpus):
+            slurm_job = SlurmJob(config)
+            slurm_job._exec_line = f"sleep {parse_time(config.nni.maxExecDuration)}"
+            self._slurm_jobs.append(slurm_job)
 
     def _compile_hp(self):
         hp_json_dict = {}

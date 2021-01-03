@@ -4,7 +4,7 @@ hp:
     - 2
     - 5
 meta:
-  gpus: 1
+  gpus: 5 
   key:
     - wait
   mode: nni 
@@ -18,7 +18,7 @@ nni:
   authorName: Hao
   experimentName: 'Demo HP search experiments'
   maxTrialNumPerGpu: 1 
-  maxExecDuration: 5d
+  maxExecDuration: 2h
   maxTrialNum: 50
   trialConcurrency: 12
   tuner:
