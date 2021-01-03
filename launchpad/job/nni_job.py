@@ -169,4 +169,3 @@ class NNIJob(BaseJob):
                                       script_path))
         self._code_dir = os.path.dirname(script_path)
         self._exec_line = " ".join([executor, script_path])
-

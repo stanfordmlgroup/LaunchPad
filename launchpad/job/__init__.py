@@ -8,4 +8,3 @@ def Job(config):
         return NNIJob(config)
     else:
         return MasterJob(config)
-

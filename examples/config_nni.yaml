@@ -4,10 +4,10 @@ hp:
     - 30
     - 50
 meta:
-  gpus: 5 
+  gpus: 5
   key:
     - wait
-  run: nni 
+  run: nni
   prefix: demo_nni
   repeat: 1
   sample: 20
@@ -26,5 +26,4 @@ nni:
     builtinTunerName: TPE
     classArgs:
       optimize_mode: maximize
-  useAnnotation: false 
-
+  useAnnotation: false
