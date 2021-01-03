@@ -24,7 +24,10 @@ def run(config="config.yaml",
         config = os.path.join(config, "config.yaml")
     col, _ = shutil.get_terminal_size()
     _config = Config(config)
-
+    if _config.meta.mode == "nni":
+        job = create_job(_config)
+        job.compile()
+        return 
     for idx, c in enumerate(_config):
         job = create_job(c)
         job.compile()

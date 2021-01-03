@@ -43,6 +43,7 @@ class Config:
         self.meta.nni_dir = os.path.join(self.meta.sandbox, "nni")
         os.makedirs(self.meta.log_dir, exist_ok=True) 
         os.makedirs(self.meta.sbatch_dir, exist_ok=True) 
+        os.makedirs(self.meta.nni_dir, exist_ok=True) 
 
         self.hp = Args(_config['hp'])
         if 'sbatch' in _config:

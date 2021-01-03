@@ -16,28 +16,14 @@ sbatch:
   mem: 16G
 nni:
   authorName: Hao
-  experimentName: 'Transportation HP search experiments'
-  logDir: /deep/group/aicc-bootcamp/transportation/nni
-  localConfig:
+  experimentName: 'Demo HP search experiments'
   maxTrialNumPerGpu: 1 
   maxExecDuration: 5d
   maxTrialNum: 50
-  searchSpacePath: hp/hp.json
-  trial:
-    codeDir: .
-    command: 'cd .. && /deep/group/packages/miniconda3/envs/transportation/bin/python3
-      main.py nni'
-    gpuNum: 0 
   trialConcurrency: 12
   tuner:
     builtinTunerName: TPE
     classArgs:
       optimize_mode: maximize
-  useAnnotation: false
-  trainingServicePlatform: remote
-  nniManagerIp: deep25.stanford.edu
-  #machineList:
-    - ip: deep21.stanford.edu
-      username: haosheng 
-      passwd:  
+  useAnnotation: false 
 
