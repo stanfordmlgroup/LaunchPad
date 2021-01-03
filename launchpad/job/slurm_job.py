@@ -2,6 +2,7 @@ import os
 import uuid
 import re
 import pkgutil
+import shutil
 import pandas as pd
 from cachetools.func import ttl_cache
 from subprocess import (check_call, 
@@ -55,8 +56,9 @@ class SlurmJob(BaseJob):
         state = None
         try:
             s = self.get_info()
-            state = s[4]
-            self._id = s[0]
+            if s is not None:
+                state = s[4]
+                self._id = s[0]
         except FileNotFoundError:
             pass # e.g. squeue not installed
 

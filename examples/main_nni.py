@@ -6,14 +6,11 @@ import numpy as np
 import pandas as pd
 
 def main(**kwargs):
-    wait = kwargs.get("wait")
-    exp_name = kwargs.get("exp_name")
+    params = nni.get_next_parameter()
+    wait = params.get("wait")
+    exp_name = "nni" + str(time.time())
     
-    metrics_path = os.path.expanduser(f"~/.launchpad/{exp_name}/metrics.csv")
-    os.makedirs(os.path.dirname(metrics_path), exist_ok=True)
-
     print(f"\tIn [main_metrics.py] -- {exp_name}")
-    print(f"\tIn [main_metrics.py] -- wait={wait}:")
     metrics = None
     while wait:
         time.sleep(1)

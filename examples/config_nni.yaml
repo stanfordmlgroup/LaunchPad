@@ -1,20 +1,21 @@
 hp:
   wait:
-    - 1
-    - 2
-    - 5
+    - 20
+    - 30
+    - 50
 meta:
   gpus: 5 
   key:
     - wait
-  mode: nni 
+  run: nni 
   prefix: demo_nni
   repeat: 1
   sample: 20
-  script: 'python main_metrics.py'
+  script: 'python main_nni.py'
   port: 8082
 sbatch:
   mem: 16G
+  exclude: deep[21-25]
 nni:
   authorName: Hao
   experimentName: 'Demo HP search experiments'
