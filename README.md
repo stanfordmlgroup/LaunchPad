@@ -6,8 +6,9 @@ LaunchPad is a light-weighted Slurm job launcher designed for hyper-parameter se
 
 ## Features
 - Consolidated configuration file. 
-- Random and grid hyper-parameter search.   
+- Integrated with Slurm cluster.
 - Experiments status and metrics tracking.
+- Support automl with [NNI](https://github.com/microsoft/nni) 🆕  
 
 ## Installation 
 ```
@@ -98,11 +99,13 @@ Auto-generated sbatch scripts and logs can be found in `sbatch` and `log` folder
 - `script`: The bash command line to run.
 - `prefix`: A prefix tag that will be added to all `exp_name`.
 - `sandbox`: A temp folder path to store all sbatch scripts and logs.
-- `mode`: One of `["grid", "random"]`. Either to perform grid search or random search for the hyper-parameters combinations. 
-- `repeat`: Round of repeat experiments. Only effective when `mode` is `grid`.
+- `run`: One of `["shell", "slurm", "nni"]`. The job launching mode. Could be current shell (sequential, `"shell"`), slurm (`"slurm"`) or nni (via slurm, `"nni"`).
 - `gpus`: Number of gpus to use. 
-- `samples`: Number of total samples. Only effective when `mode` is `random`. 
+Following meta parameters are only effective when `run != "nni"`.
 - `keys`: Key experiment parameters to identify each experiment. The `exp_name` will be a underline concatenation of all the parameters specified here. If not given a random uuid is used as `exp_name`. 
+- `mode`: One of `["grid", "random"]`. Either to perform grid search or random search for the hyper-parameters combinations. 
+- `repeat`: Round of repeat experiments. Only effective when `mode` is `grid`. 
+- `samples`: Number of total samples. Only effective when `mode` is `random`. 
 
 ### Sbatch parameters
 `sbatch` section contains all extra parameters that will be passed to the sbatch. 
@@ -110,6 +113,10 @@ Please refer to [online sbatch documentation via SchedMD](https://slurm.schedmd.
 
 ### Experiment parameters
 `hp` section is fully customized by user. They are hyper-parameters we want to scan for the training experiments. 
+
+### NNI parameters
+`nni` section is optional and only effective when `run == "nni"`. A detailed description can be found [here](https://nni.readthedocs.io/en/latest/Tutorial/ExperimentConfig.html).
+
  
 ---
 Maintainers: [@Hao](mailto:haosheng@cs.stanford.edu)
