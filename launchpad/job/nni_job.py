@@ -1,15 +1,14 @@
 import os
 import yaml
+import sys
+import shutil
 import time
 import socket
 import copy
-import sys
 import uuid
 import json
-import re
 import getpass
 import traceback
-import pandas as pd
 from subprocess import (check_call, 
                         check_output,
                         CalledProcessError)
@@ -36,13 +35,14 @@ class NNIJob(BaseJob):
     def __init__(self, config): 
         super().__init__(config)
         self._config = config
+        self._duration = parse_time(config.nni.maxExecDuration)
         self._nni_hp_path = os.path.join(self._meta.nni_dir, f"{self._exp_name}.json")
         self._nni_config_path = os.path.join(self._meta.nni_dir, f"{self._exp_name}.yaml")
         self._slurm_jobs = []
         self._nodes = None
 
     def compile(self):
-        self._passwd = getpass.getpass()
+        self._prompt_key()
         self._compile_slurm_job()
         self._get_gpus()
         self._compile_hp()
@@ -57,13 +57,29 @@ class NNIJob(BaseJob):
                         "--port", str(self._meta.port)])
             print("Output from NNI:")
             print(output.decode("utf-8"))
+            os.remove(self._nni_config_path)
+            print(f"Removed nni config file [{self._nni_config_path}].")
+
         except CalledProcessError as e:
             print(f"Error from NNI (return code={e.returncode}):")
             print(e.output.decode("utf-8"))
             raise e
 
+        try:
+            time.sleep(self._duration)
+        except KeyboardInterrupt:
+            print('Stopped by user')
+            try:
+                self.cancel()
+                sys.exit(0)
+            except SystemExit:
+                os._exit(0)
+
+
     def cancel(self):
         check_output(["nnictl", "stop"])
+        if os.path.isfile(self._nni_config_path):
+            os.remove(self._nni_config_path)
         self._release_gpus()
     
     def __del__(self):
@@ -89,12 +105,17 @@ class NNIJob(BaseJob):
         print(f"GPU resources is ready: {list(self._nodes)}")
 
     def _release_gpus(self):
+        if len(self._nodes) == 0:
+            return
+
         print(f"Release GPU resources {list(self._nodes)} ...")
+
         for job in self._slurm_jobs:
             job.cancel()
+        self._nodes = []
 
     def _prompt_key(self):
-        pass 
+        self._passwd = getpass.getpass()
 
     def _compile_slurm_job(self):
         # FIXME: only K gpu is visible per node if request K each time
@@ -127,6 +148,8 @@ class NNIJob(BaseJob):
             machine_list.append({"ip": node + ".stanford.edu",
                                  "username": username,
                                  "passwd": self._passwd, 
+                                 "useActiveGpu": True,
+                                 "maxTrialNumPerGpu": 1,
                                  "preCommand": pre_command})
         self._nni['machineList'] = machine_list
         self._nni['nniManagerIp'] = socket.gethostname()
