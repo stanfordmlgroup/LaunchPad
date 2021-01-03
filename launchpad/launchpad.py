@@ -7,7 +7,7 @@ import pandas as pd
 import logging
 import shutil
 
-from .slurm import Job
+from .exp import create_job 
 from .util import colorful_state, Config, Args
 
 logger = logging.getLogger("LaunchPad")
@@ -26,7 +26,7 @@ def run(config="config.yaml",
     _config = Config(config)
 
     for idx, c in enumerate(_config):
-        job = Job(c)
+        job = create_job(c)
         job.compile()
         state = job.get_state()
                     

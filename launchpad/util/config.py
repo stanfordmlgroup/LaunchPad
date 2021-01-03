@@ -40,12 +40,19 @@ class Config:
 
         self.meta.log_dir = os.path.join(self.meta.sandbox, "log")
         self.meta.sbatch_dir = os.path.join(self.meta.sandbox, "sbatch")
+        self.meta.nni_dir = os.path.join(self.meta.sandbox, "nni")
         os.makedirs(self.meta.log_dir, exist_ok=True) 
         os.makedirs(self.meta.sbatch_dir, exist_ok=True) 
 
         self.hp = Args(_config['hp'])
-        self.sbatch = Args(_config['sbatch'])
-    
+        if 'sbatch' in _config:
+            self.sbatch = Args(_config['sbatch'])
+        else:
+            self.sbatch = None
+        if 'nni' in _config:
+            self.nni = Args(_config['nni'])
+        else:
+            self.nni = None
     
     def __iter__(self):
         self.round = 0
