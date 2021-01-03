@@ -67,4 +67,3 @@ class MasterJob(BaseJob):
             print(f"Slurm job ID: {job._id}")
             print("Latest metrics: ")
             print(f"{job.get_metrics()}")
-
