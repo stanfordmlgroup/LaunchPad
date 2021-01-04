@@ -1,6 +1,7 @@
 # LaunchPad
 [![Build Status](https://circleci.com/gh/stanfordmlgroup/LaunchPad.svg?style=svg&circle-token=00b64008c5dc07a73a311815b5ca0e935291dbb3)](https://circleci.com/gh/stanfordmlgroup/LaunchPad)
 [![CodeFactor](https://www.codefactor.io/repository/github/stanfordmlgroup/launchpad/badge)](https://www.codefactor.io/repository/github/stanfordmlgroup/launchpad)
+[![PyPI version](https://badge.fury.io/py/launch-pad.svg)](https://badge.fury.io/py/launch-pad)
 [![made-with-python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg)](https://www.python.org/) <br>
 LaunchPad is a light-weighted Slurm job launcher designed for hyper-parameter search.
 

@@ -48,14 +48,24 @@ class BaseJob:
             raise ValueError("[metrics_path] has not been set up!")
         metrics_path = metrics_path.format(**self._hp)
         return metrics_path
-
-    def _get_exec_line(self):
-        executor, script_path = self._meta.script.split()
+        
+    def _parse_script(self):
+        script_items = tuple(self._meta.script.split())
+        if len(script_items) == 2:
+            executor, script_path = script_items 
+            args = []
+        else:
+            executor, script_path, args = script_items 
+            args = [args]
         config_path = self._meta.config_path
         script_path = os.path.abspath(os.path.join(os.path.dirname(config_path),
-                                      script_path))
+                                  script_path))
+        return executor, script_path, args
+
+    def _get_exec_line(self):
+        executor, script_path, args = self._parse_script()
         self._code_dir = os.path.dirname(script_path)
-        self._exec_line = " ".join([executor, script_path] \
+        self._exec_line = " ".join([executor, script_path] + args \
                 + [f"--{k} {v}" for k, v in self._hp.items()])
 
     def _get_exp_name(self): 
