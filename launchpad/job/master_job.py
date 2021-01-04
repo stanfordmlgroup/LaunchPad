@@ -65,5 +65,7 @@ class MasterJob(BaseJob):
         print(f"Current State: {colorful_state(state)}") 
         if state == "Running":
             print(f"Slurm job ID: {job._id}")
-            print("Latest metrics: ")
-            print(f"{job.get_metrics()}")
+            metrics = job.get_metrics()
+            if metrics is not None:
+                print("Latest metrics: ")
+                print(f"{job.get_metrics()}")

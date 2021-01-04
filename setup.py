@@ -21,11 +21,11 @@ INSTALL_REQUIRES = (
 
 
 def version():
-    return "1.1.2"
+    return "1.2.1"
 
 
 setup(
-    name='launchpad',
+    name='launch-pad',
     version=version(),
     description='A tool that automatically compile and launch slurm jobs \
                  based on a YAML configuration file.',
@@ -47,9 +47,8 @@ setup(
     ],
     keywords='automation, sbatch',
     install_requires=INSTALL_REQUIRES,
-    #packages=find_packages(),
-    py_modules=['launchpad'],
-    package_data={'launchpad': ['*.sh']},
+    packages=find_packages(),
+    data_files=[('slurm_script', ['launchpad/job/scripts/sbatch_template.sh'])],
     zip_safe=False,
     include_package_data=True,
     entry_points={'console_scripts': ['lp = launchpad:main']},

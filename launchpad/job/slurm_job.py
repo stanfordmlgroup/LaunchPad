@@ -57,8 +57,8 @@ class SlurmJob(BaseJob):
         try:
             s = self.get_info()
             if s is not None:
-                state = s[4]
-                self._id = s[0]
+                state = s['state']
+                self._id = s['id']
         except FileNotFoundError:
             pass # e.g. squeue not installed
 
@@ -80,7 +80,11 @@ class SlurmJob(BaseJob):
     
     @ttl_cache(ttl=5)
     def get_metrics(self):
-        return pd.read_csv(self._get_metrics_path()).tail(1)
+        metrics_path = self._meta.get("metrics_path", None)
+        if metrics_path is None:
+            return None
+        metrics_path = metrics_path.format(**self._hp)
+        return pd.read_csv(metrics_path).tail(1)
                                     
     def run(self): 
         self.compile()
@@ -91,13 +95,6 @@ class SlurmJob(BaseJob):
     def cancel(self):
         check_output(["scancel", "-n", self._exp_name])
     
-    def _get_metrics_path(self):
-        metrics_path = self._meta.get("metrics_path", None)
-        if metrics_path is None:
-            raise ValueError("[metrics_path] has not been set up!")
-        metrics_path = metrics_path.format(**self._hp)
-        return metrics_path
-
     def _get_sbatch_config(self):
         return "\n".join(
                 [f"#SBATCH --{k}={v}" for k, v in self._sbatch.items()])

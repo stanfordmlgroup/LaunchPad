@@ -126,7 +126,11 @@ class NNIJob(BaseJob):
     def _compile_hp(self):
         hp_json_dict = {}
         for k, v in self._hp.items():
-            hp_json_dict[k] = {"_type": "choice", "_value": v}
+            if isinstance(v, list):
+                hp_json_dict[k] = {"_type": "choice", "_value": v}
+            else:
+                hp_json_dict[k] = {"_type": v['type'], "_value": v['value']}
+
         with open(self._nni_hp_path, 'w') as f:
             json.dump(hp_json_dict, f)
         print(f"Dump HP json file to [{self._nni_hp_path}].")
@@ -163,9 +167,6 @@ class NNIJob(BaseJob):
         self._exp_name = self._meta.prefix
     
     def _get_exec_line(self):
-        executor, script_path = self._meta.script.split()
-        config_path = self._meta.config_path
-        script_path = os.path.abspath(os.path.join(os.path.dirname(config_path),
-                                      script_path))
+        executor, script_path, args = self._parse_script()
         self._code_dir = os.path.dirname(script_path)
-        self._exec_line = " ".join([executor, script_path])
+        self._exec_line = " ".join([executor, script_path] + args)
