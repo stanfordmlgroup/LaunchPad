@@ -11,4 +11,3 @@ def Job(config):
             return NNILocalJob(config)
         else:
             return NNISlurmJob(config)
-
