@@ -199,5 +199,3 @@ class NNILocalJob(NNISlurmJob):
         check_output(["nnictl", "stop"])
         if os.path.isfile(self._nni_config_path):
             os.remove(self._nni_config_path)
-    
- 
