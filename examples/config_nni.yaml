@@ -7,7 +7,6 @@ meta:
   gpus: 5
   key:
     - wait
-  run: nni
   prefix: demo_nni
   repeat: 1
   sample: 20
