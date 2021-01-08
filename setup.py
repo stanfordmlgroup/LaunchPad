@@ -21,7 +21,7 @@ INSTALL_REQUIRES = (
 
 
 def version():
-    return "1.2.1"
+    return "1.2.2"
 
 
 setup(

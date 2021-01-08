@@ -18,7 +18,7 @@ from .slurm_job import SlurmJob
 from .util import parse_time
 
 
-class NNISlurmJob(SlurmJob):
+class NNIRemoteJob(SlurmJob):
     def __init__(self, config):
         _config = copy.deepcopy(config)
         # FIXME: only K gpu is visible per node if request K each time
@@ -31,7 +31,7 @@ class NNISlurmJob(SlurmJob):
         self._exp_name = self._meta.prefix + "_slurm_job_" + uuid.uuid4().hex
 
 
-class NNIJob(BaseJob):
+class NNISlurmJob(BaseJob):
     def __init__(self, config): 
         super().__init__(config)
         self._config = config
@@ -59,6 +59,8 @@ class NNIJob(BaseJob):
             print(output.decode("utf-8"))
             os.remove(self._nni_config_path)
             print(f"Removed nni config file [{self._nni_config_path}].")
+            print(f"Press [Ctrl+Z] to send the experiment to the background.")
+            print(f"Press [Ctrl+C] to stop the experiment and release resources.")
 
         except CalledProcessError as e:
             print(f"Error from NNI (return code={e.returncode}):")
@@ -120,7 +122,7 @@ class NNIJob(BaseJob):
     def _compile_slurm_job(self):
         # FIXME: only K gpu is visible per node if request K each time
         for _ in range((self._meta.gpus+3) // 4):
-            slurm_job = NNISlurmJob(self._config)
+            slurm_job = NNIRemoteJob(self._config)
             self._slurm_jobs.append(slurm_job)
 
     def _compile_hp(self):
@@ -170,3 +172,32 @@ class NNIJob(BaseJob):
         executor, script_path, args = self._parse_script()
         self._code_dir = os.path.dirname(script_path)
         self._exec_line = " ".join([executor, script_path] + args)
+
+
+class NNILocalJob(NNISlurmJob):
+    def compile(self):
+        self._compile_hp()
+        self._compile_nni_config()
+    
+    def _compile_nni_config(self): 
+        self._nni['searchSpacePath'] = self._nni_hp_path
+        self._nni['logDir'] = self._meta.nni_dir
+        # FIXME: allow more than 1 gpus per trial
+        self._nni['trial'] = {"gpuNum": 1,
+                              "command": self._exec_line,
+                              "codeDir": self._code_dir}
+        
+        self._nni['trainingServicePlatform'] = "local"
+        self._nni['nniManagerIp'] = socket.gethostname()
+
+        with open(self._nni_config_path, 'w') as f:
+            yaml.dump(dict(self._nni), f)
+
+        print(f"Dump nni config file to [{self._nni_config_path}].")
+
+    def cancel(self):
+        check_output(["nnictl", "stop"])
+        if os.path.isfile(self._nni_config_path):
+            os.remove(self._nni_config_path)
+    
+ 
