@@ -1,7 +1,6 @@
 import os
 import yaml
 import sys
-import json
 import shutil
 import time
 import socket
@@ -10,14 +9,11 @@ import uuid
 import json
 import getpass
 import traceback
-import shlex
+from pyngrok import ngrok
 from psutil import process_iter
-from subprocess import (PIPE,
-                        Popen,
-                        check_call, 
+from subprocess import (check_call, 
                         check_output,
                         CalledProcessError)
-from pyngrok import ngrok
 
 from .base import BaseJob
 from .slurm_job import SlurmJob
