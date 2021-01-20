@@ -1,6 +1,7 @@
 import os
 import yaml
 import sys
+import json
 import shutil
 import time
 import socket
@@ -9,9 +10,14 @@ import uuid
 import json
 import getpass
 import traceback
-from subprocess import (check_call, 
+import shlex
+from psutil import process_iter
+from subprocess import (PIPE,
+                        Popen,
+                        check_call, 
                         check_output,
                         CalledProcessError)
+from pyngrok import ngrok
 
 from .base import BaseJob
 from .slurm_job import SlurmJob
@@ -47,16 +53,20 @@ class NNISlurmJob(BaseJob):
         self._get_gpus()
         self._compile_hp()
         self._compile_nni_config()
-    
+        self._free_port()
     
     def run(self): 
         self.compile()
         try:
+            self._free_port()
             output = check_output(["nnictl", "create", 
                         "--config", self._nni_config_path, 
                         "--port", str(self._meta.port)])
             print("Output from NNI:")
             print(output.decode("utf-8"))
+            if 'tunnel' in self._meta and self._meta.tunnel == 'ngrok':
+                tunnel = ngrok.connect(self._meta.port)
+                print(tunnel)
             os.remove(self._nni_config_path)
             print(f"Removed nni config file [{self._nni_config_path}].")
             print(f"Press [Ctrl+Z] to send the experiment to the background.")
@@ -172,7 +182,13 @@ class NNISlurmJob(BaseJob):
         executor, script_path, args = self._parse_script()
         self._code_dir = os.path.dirname(script_path)
         self._exec_line = " ".join([executor, script_path] + args)
-
+    
+    def _free_port(self):
+        for proc in process_iter(['pid', 'name', 'username']):
+            if proc.info['name'] != 'sh':
+                for conns in proc.connections(kind = 'inet'): 
+                    if conns.laddr.port == self._meta.port:
+                        proc.kill()
 
 class NNILocalJob(NNISlurmJob):
     def compile(self):
@@ -189,7 +205,6 @@ class NNILocalJob(NNISlurmJob):
         
         self._nni['trainingServicePlatform'] = "local"
         self._nni['nniManagerIp'] = socket.gethostname()
-
         with open(self._nni_config_path, 'w') as f:
             yaml.dump(dict(self._nni), f)
 

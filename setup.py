@@ -15,7 +15,8 @@ INSTALL_REQUIRES = (
      'pandas',
      'tabulate',
      'pyyaml',
-     'cachetools'
+     'cachetools',
+     'pyngrok'
      ]
 )
 
