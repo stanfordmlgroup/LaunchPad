@@ -11,12 +11,13 @@ INSTALL_REQUIRES = (
     ['fire>=0.2',
      'scikit-learn>=0.20',
      'importlib-resources==1.4.0',
+     'pyngrok>=5.0.1',
+     'psutil>=5.8.0',
      'numpy',
      'pandas',
      'tabulate',
      'pyyaml',
-     'cachetools',
-     'pyngrok'
+     'cachetools'
      ]
 )
 
