@@ -93,9 +93,9 @@ python /sailhome/haosheng/workspace/LaunchPad/examples/main_key.py --lr 0.5 --op
 Current State: Compiled
 ```
 
-Once you think the configuration is ready, you can launch sbatch experiments:
+Once you think the configuration is ready, you can launch slurm experiments:
 ```
-lp config.yaml --run sbatch
+lp config.yaml --run slurm
 ```
 
 Auto-generated sbatch scripts and logs can be found in `sbatch` and `log` folder under `sandbox` specified in the config. 
