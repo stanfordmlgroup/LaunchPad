@@ -1,4 +1,5 @@
 #!/bin/bash
+#SBATCH --account=deep
 #SBATCH --partition=deep --qos=normal
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=4
