@@ -15,16 +15,15 @@ class BaseJob:
         self._hp = config.hp
         self._sbatch = config.sbatch
         self._nni = config.nni
-        self._data = config.data
+        self._src_path = config.src_path
+        self._dst_dir = config.dst_dir
         
         self._get_exp_name()
         self._get_exec_line()
         self._log_filepath = os.path.join(self._meta.log_dir, f"{self._exp_name}.log")
  
-        if self._data is not None:
-            if (self._data.get("src_paths") and 
-                self._data.get("dst_dir")):
-                self._add_data_transfer_lines()                
+        if self._src_path and self._dst_dir:
+            self._add_data_transfer_lines()                
     
     def compile(self):
         pass
@@ -71,6 +70,7 @@ class BaseJob:
         executor, script_path, args = self._parse_script()
         self._code_dir = os.path.dirname(script_path)
         self._exec_line = " ".join([executor, script_path] + args \
+                + [f"--{k} {v}" for k, v in self._hp.items()])
         self._exec_line_display = self._exec_line
         
     def _get_exp_name(self): 
@@ -88,10 +88,7 @@ class BaseJob:
 
     # Add data transfer and cleanup to self._exec_line 
     def _add_data_transfer_lines(self): 
-        rsync_line = " ".join([
-            f"rsync -r -W --inplace --progress --no-compress --ignore-existing " +
-            f"{src_path} {self._data.dst_dir};"
-            for src_path in self._data.src_paths
-        ])
-        rm_line = f"; rm -rf {self._data.dst_dir}"
+        rsync_line = (f"rsync -r -W --inplace --progress --no-compress --ignore-existing " +
+                      f"{self._src_path} {self._dst_dir};")
+        rm_line = f"; rm -rf {self._dst_dir}"
         self._exec_line = rsync_line + self._exec_line + rm_line                
