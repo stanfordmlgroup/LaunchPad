@@ -55,6 +55,11 @@ class Config:
             self.nni = Args(_config['nni'])
         else:
             self.nni = None
+            
+        if 'data' in _config:
+            self.data = Args(_config['data'])            
+        else:
+            self.data = None
     
     def __iter__(self):
         self.round = 0
