@@ -162,6 +162,12 @@ Please refer to [online sbatch documentation via SchedMD](https://slurm.schedmd.
 ### Experiment parameters
 `hp` section is fully customized by user. They are hyper-parameters we want to scan for the training experiments. 
 
+### Data parameters
+`data` section is optional and can be used to transfer data files (ie, hdf5 dataset) to a machine.
+This is useful for preventing excessive reads from `/deep`.
+- `src_paths`: list of paths that we want to transfer (ie, hdf5 dataset(s))
+- `dst_dir`: path where we want to transfer `src_paths` (ie, `/scr`). `dst_dir` will be removed upon script completion.
+
 ### NNI parameters
 `nni` section is optional and only effective when `run == "nni"`. A detailed description can be found [here](https://nni.readthedocs.io/en/latest/Tutorial/ExperimentConfig.html).
 
