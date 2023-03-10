@@ -15,11 +15,15 @@ class BaseJob:
         self._hp = config.hp
         self._sbatch = config.sbatch
         self._nni = config.nni
+        self._src_path = config.src_path
+        self._dst_dir = config.dst_dir
         
         self._get_exp_name()
         self._get_exec_line()
         self._log_filepath = os.path.join(self._meta.log_dir, f"{self._exp_name}.log")
  
+        if self._src_path and self._dst_dir:
+            self._add_data_transfer_lines()                
     
     def compile(self):
         pass
@@ -38,7 +42,7 @@ class BaseJob:
 
     def shell(self): 
         try:
-            check_call(self._exec_line.split())
+            check_call(self._exec_line, shell=True)
         except CalledProcessError as e:
             print(e.output)
 
@@ -67,7 +71,8 @@ class BaseJob:
         self._code_dir = os.path.dirname(script_path)
         self._exec_line = " ".join([executor, script_path] + args \
                 + [f"--{k} {v}" for k, v in self._hp.items()])
-
+        self._exec_line_display = self._exec_line
+        
     def _get_exp_name(self): 
         if "key" in self._meta:
             exp_name = "_".join([str(self._hp[k]) for k in self._meta.key])
@@ -80,3 +85,10 @@ class BaseJob:
     def _get_sbatch_config(self):
         return "\n".join(
                 [f"#SBATCH --{k}={v}" for k, v in self._sbatch.items()])
+
+    # Add data transfer and cleanup to self._exec_line 
+    def _add_data_transfer_lines(self): 
+        rsync_line = (f"rsync -r -W --inplace --progress --no-compress --ignore-existing " +
+                      f"{self._src_path} {self._dst_dir};")
+        rm_line = f"; rm -rf {self._dst_dir}"
+        self._exec_line = rsync_line + self._exec_line + rm_line                

@@ -20,7 +20,7 @@ class ShellJob(BaseJob):
 
     def run(self): 
         try:
-            check_call(self._exec_line.split())
+            check_call(self._exec_line, shell=True)
             self.state = "Finished"
         except CalledProcessError as e:
             self.state = "Failed"

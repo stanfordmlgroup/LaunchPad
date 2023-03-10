@@ -61,7 +61,7 @@ class MasterJob(BaseJob):
     def print_state(self, idx, job):
         state = job.get_state()
         print("-" * self._col)
-        print(f"Experiment No.{idx+1} -- [{job._exp_name}]:\n{job._exec_line}")
+        print(f"Experiment No.{idx+1} -- [{job._exp_name}]:\n{job._exec_line_display}")
         print(f"Current State: {colorful_state(state)}") 
         if state == "Running":
             print(f"Slurm job ID: {job._id}")

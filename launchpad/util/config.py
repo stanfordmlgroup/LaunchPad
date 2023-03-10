@@ -1,6 +1,7 @@
 import yaml
 import os
 import copy
+from pathlib import Path
 from sklearn.model_selection import ParameterGrid, ParameterSampler
 
 
@@ -55,6 +56,24 @@ class Config:
             self.nni = Args(_config['nni'])
         else:
             self.nni = None
+            
+        self.src_path = None 
+        self.dst_dir = None
+        if 'data' in _config:
+            data = Args(_config['data'])
+            if 'src_path' in data:
+                if Path(data['src_path']).exists():
+                    self.src_path = data['src_path']
+                else:
+                    print(f"Ignoring src_path - does not exist: [{data['src_path']}].")
+            if 'dst_dir' in data:
+                if (Path(data['dst_dir']).is_relative_to("/scr") and 
+                    Path(data['dst_dir']).name != "scr"):
+                    self.dst_dir = data['dst_dir']
+                    if not self.dst_dir.endswith("/"):
+                        self.dst_dir += "/"
+                else:
+                    print(f"Ignoring dst_dir - is not a subdirectory of /scr: [{data['dst_dir']}].")
     
     def __iter__(self):
         self.round = 0
