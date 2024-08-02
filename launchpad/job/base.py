@@ -69,7 +69,11 @@ class BaseJob:
     def _get_exec_line(self):
         executor, script_path, args = self._parse_script()
         self._code_dir = os.path.dirname(script_path)
-        self._exec_line = " ".join([executor, script_path] + args \
+        if self._meta.hydra:
+            self._exec_line = " ".join([executor, script_path] + args \
+                        + [f"model.optimizer.lr={v}" if k == 'lr' else f"{k}={v}" for k, v in self._hp.items() if k != 'round' and k != 'exp_name'])
+        else:
+            self._exec_line = " ".join([executor, script_path] + args \
                 + [f"--{k} {v}" for k, v in self._hp.items()])
         self._exec_line_display = self._exec_line
         
